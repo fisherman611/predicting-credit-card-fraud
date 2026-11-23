@@ -1,0 +1,13 @@
+{
+  "id": "huthnhlng/s6e11-credit-card-fraud-cv",
+  "title": "S6E11 Credit Card Fraud CV",
+  "code_file": "train.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_internet": false,
+  "dataset_sources": [],
+  "competition_sources": ["playground-series-s6e11"],
+  "kernel_sources": []
+}
