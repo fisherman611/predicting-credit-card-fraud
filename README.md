@@ -103,8 +103,9 @@ Trên seed 2026, hiệu chỉnh giảm OOF AUC từ **0.95049** xuống **0.9503
 | v1, ensemble 80/20 | 58752634 | 0.95057 | **0.95122** |
 | v2, thêm tương tác | 58756159 | 0.95043 | 0.95076 |
 | v3, hiệu chỉnh điểm v1 | 58756163 | 0.95064 | 0.95119 |
+| v4, 95% v1 refit + 5% Transformer | 58767546 | | 0.95117 |
 
-V1 vẫn đứng đầu trong ba bài nộp. V3 hiệu chỉnh thấp hơn v1 0.00003 trên public leaderboard. [Danh sách bài nộp trên Kaggle](https://www.kaggle.com/competitions/playground-series-s6e11/submissions).
+V1 vẫn đứng đầu trong bốn bài nộp. V3 hiệu chỉnh thấp hơn v1 0.00003 trên public leaderboard. [Danh sách bài nộp trên Kaggle](https://www.kaggle.com/competitions/playground-series-s6e11/submissions).
 
 ## Thử nghiệm mạng neural
 
@@ -185,7 +186,7 @@ Stacking logistic học từ logit của v1, Transformer và GLM dữ liệu g�
 
 Công thức v1 + 5% Transformer được chốt trước khi chấm holdout. Để tái lập, tải dự đoán v1 trên split đã khóa và chạy `--stage holdout` cho Transformer. Sau đó truyền `--selected v1_plus_transformer_05` và báo cáo development đã lưu vào `kaggle/tokens/compare.py`. Bản CPU là lượt hoàn tất trước do GPU đang chờ.
 
-Trên holdout 139.992 dòng, AUC tăng từ 0.952216 lên 0.952231. Số ca CVV bằng 0 bị bỏ sót ở top 5% giữ nguyên 536; tổng số ca bắt được giảm từ 1.697 xuống 1.693. Khoảng tin cậy xấp xỉ 95% của chênh lệch AUC theo dự đoán cố định là [−0.000070, +0.000101]. Mức tăng này được kiểm tra thêm bằng một bài nộp. [Phiên holdout trên CPU](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-token-transformer-holdout-cpu).
+Trên holdout 139.992 dòng, AUC tăng từ 0.952216 lên 0.952231. Số ca CVV bằng 0 bị bỏ sót ở top 5% giữ nguyên 536; tổng số ca bắt được giảm từ 1.697 xuống 1.693. Khoảng tin cậy xấp xỉ 95% của chênh lệch AUC theo dự đoán cố định là [−0.000070, +0.000101]. Bài v4 `58767546` đạt public AUC 0.95117, thấp hơn bài v1 0.00005. Hai thành phần v4 đều huấn luyện lại trên toàn bộ 699.960 dòng, còn bài v1 cũ trung bình dự đoán từ năm fold. OOF ở bảng trên chỉ dùng phần development và không so trực tiếp với OOF toàn bộ train của v1. [Phiên holdout trên CPU](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-token-transformer-holdout-cpu). [Phiên full refit v1](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-tokens-full) · [Phiên full refit Transformer CPU](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-token-transformer-full-cpu).
 
 Tạo lại bài nộp bằng cách chạy `--stage full --variant v1` cho cây và `--stage full --model transformer` cho Transformer, rồi xuất blend từ hai CSV có ID trùng khớp:
 
