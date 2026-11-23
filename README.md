@@ -183,8 +183,18 @@ Stacking logistic học từ logit của v1, Transformer và GLM dữ liệu g�
 | Stacking logistic | 0.947991 | −0.000925 | 0/3 |
 | **v1 + 5% Transformer** | **0.948952** | **+0.000036** | **3/3** |
 
-Công thức v1 + 5% Transformer được chốt trước khi chấm holdout. [Token LightGBM](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-tokens-development) · [Transformer](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-token-transformer-development) · [GLM dữ liệu gốc](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-original-glm-development).
+Công thức v1 + 5% Transformer được chốt trước khi chấm holdout. Để tái lập, tải dự đoán v1 trên split đã khóa và chạy `--stage holdout` cho Transformer. Sau đó truyền `--selected v1_plus_transformer_05` và báo cáo development đã lưu vào `kaggle/tokens/compare.py`. Bản CPU là lượt hoàn tất trước do GPU đang chờ.
 
+Trên holdout 139.992 dòng, AUC tăng từ 0.952216 lên 0.952231. Số ca CVV bằng 0 bị bỏ sót ở top 5% giữ nguyên 536; tổng số ca bắt được giảm từ 1.697 xuống 1.693. Khoảng tin cậy xấp xỉ 95% của chênh lệch AUC theo dự đoán cố định là [−0.000070, +0.000101]. Mức tăng này được kiểm tra thêm bằng một bài nộp. [Phiên holdout trên CPU](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-token-transformer-holdout-cpu).
+
+Tạo lại bài nộp bằng cách chạy `--stage full --variant v1` cho cây và `--stage full --model transformer` cho Transformer, rồi xuất blend từ hai CSV có ID trùng khớp:
+
+```bash
+python kaggle/tokens/export.py --development-report development.json --holdout-report holdout.json \
+  --v1 v1/submission.csv --transformer transformer/submission.csv --output submissions/token-v4.csv
+```
+
+[Token LightGBM](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-tokens-development) · [Transformer](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-token-transformer-development) · [GLM dữ liệu gốc](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-original-glm-development).
 
 ## Chạy trên Kaggle
 
