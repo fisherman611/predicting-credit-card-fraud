@@ -230,6 +230,20 @@ python kaggle/dual/stack.py --input data --output submissions/core_stack
 
 Thử nghiệm stack nhỏ dùng 20 mô hình đại diện của [OOF bank](https://www.kaggle.com/datasets/goodpjw2008/s6e11-oof-bank) đạt 0.951560 OOF. Thêm dự đoán GPT-2 compact trong [bundle công khai](https://www.kaggle.com/datasets/amanatar/s6e11-rank1-q17-meta-bundle) nâng lên 0.951954 trên cả năm fold. Đây là một thí nghiệm mới, không phải phép tái huấn luyện toàn bộ Wide Stack của tác giả.
 
+## EDA train, validation và test
+
+[Báo cáo EDA](eda/report/report.html) gồm các biểu đồ phân phối, tỷ lệ fraud theo nhóm với khoảng tin cậy Wilson, tương quan Spearman, khác biệt phân phối và lỗi OOF của v1. Validation là fold 0 trong StratifiedKFold 5 fold seed 42 của v1, gồm 139.992 dòng. Train là bốn fold còn lại, gồm 559.968 dòng. Test gồm 299.984 dòng không có nhãn. Fold này đã được dùng ở các thí nghiệm trước.
+
+Thống kê tổng hợp và biểu đồ được lưu ở `eda/report/`. Để tạo lại:
+
+```bash
+python -m pip install -r requirements.txt
+python eda/analyze.py --train data/train.csv --test data/test.csv \
+  --oof submissions/v1/oof.npz --output outputs/eda
+```
+
+Bỏ `--oof` khi không có dự đoán OOF của v1. Khi có OOF, mã kiểm tra ID, nhãn và fold trước khi vẽ biểu đồ lỗi. Các biểu đồ phân phối số dùng cùng cạnh bin và gộp đuôi ngoài phân vị 0,1%–99,9%; thống kê min, max và các phân vị được lưu trong CSV.
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.

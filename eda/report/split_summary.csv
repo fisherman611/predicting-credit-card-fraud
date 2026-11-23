@@ -1,0 +1,4 @@
+split,rows,columns,missing_cells,duplicate_feature_rows,id_min,id_max,fraud_count,fraud_rate
+Train,559968,26,0,0,1,699958,9352.0,0.016700954340248014
+Validation,139992,26,0,0,0,699959,2337.0,0.016693811074918567
+Test,299984,25,0,0,699960,999943,,

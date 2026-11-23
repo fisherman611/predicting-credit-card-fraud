@@ -1,0 +1,5 @@
+outcome,rows
+Fraud captured,1669
+Fraud missed,668
+Legitimate below top 5%,132325
+Legitimate flagged,5330

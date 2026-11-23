@@ -1,0 +1,78 @@
+<!doctype html><html lang="vi"><meta charset="utf-8"><title>EDA dự đoán gian lận</title>
+<style>body{font:16px system-ui;line-height:1.55;color:#202b37;max-width:1300px;margin:3em auto;padding:0 1.5em}
+img{width:100%;height:auto} table{border-collapse:collapse}td,th{padding:.45em;border:1px solid #d8dee4;text-align:right}h2{margin-top:2em}</style>
+<h1>EDA gian lận thẻ tín dụng</h1><p>Competition Playground S6E11 · Full train 699.960 dòng · StratifiedKFold seed 42</p><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>split</th>
+      <th>rows</th>
+      <th>columns</th>
+      <th>missing_cells</th>
+      <th>duplicate_feature_rows</th>
+      <th>id_min</th>
+      <th>id_max</th>
+      <th>fraud_count</th>
+      <th>fraud_rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Train</td>
+      <td>559968</td>
+      <td>26</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>699958</td>
+      <td>9352.0</td>
+      <td>0.016701</td>
+    </tr>
+    <tr>
+      <td>Validation</td>
+      <td>139992</td>
+      <td>26</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>699959</td>
+      <td>2337.0</td>
+      <td>0.016694</td>
+    </tr>
+    <tr>
+      <td>Test</td>
+      <td>299984</td>
+      <td>25</td>
+      <td>0</td>
+      <td>0</td>
+      <td>699960</td>
+      <td>999943</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table><p>Tệp thống kê: <a href="split_summary.csv">split_summary.csv</a> · <a href="feature_profile.csv">feature_profile.csv</a> · <a href="distribution_effects.csv">distribution_effects.csv</a> · <a href="fraud_rates.csv">fraud_rates.csv</a></p><h2>Tập dữ liệu</h2><p>Validation là fold 0 của StratifiedKFold 5 fold seed 42 trên train.csv. Train là 4 fold còn lại. Test là toàn bộ test.csv, không có nhãn. Validation này đã tham gia các phân tích trước và không là holdout mới độc lập.</p><img src='01_numeric_splits.png' alt='Tập dữ liệu'><h2>Phân phối biến số</h2><p>Histogram dùng cùng cạnh bin của train, mỗi tập được chuẩn hóa theo số dòng. Đuôi ngoài phân vị 0,1%–99,9% được gộp tại hai mép. Xem feature_profile.csv để đọc min, max và các phân vị đầy đủ.</p><img src='02_categories_splits.png' alt='Phân phối biến số'><h2>Biến phân loại</h2><p>Biểu đồ thể hiện tỷ lệ theo từng tập. Các bảng feature_profile.csv và distribution_effects.csv chứa toàn bộ biến.</p><img src='03_features_by_target.png' alt='Biến phân loại'><h2>Phân phối theo nhãn</h2><p>Mỗi lớp được chuẩn hóa riêng để so sánh hình dạng. Điều này không thể hiện tỷ lệ fraud thực tế.</p><img src='04_fraud_rates.png' alt='Phân phối theo nhãn'><h2>Tỷ lệ fraud theo nhóm</h2><p>Điểm là tỷ lệ fraud trên tập train, thanh ngang là khoảng tin cậy Wilson 95%, nhãn kèm số dòng và số fraud.</p><img src='05_numeric_correlations.png' alt='Tỷ lệ fraud theo nhóm'><h2>Tương quan</h2><p>Tương quan Spearman của các biến số trên train. Tương quan không chứng minh quan hệ nhân quả.</p><img src='06_distribution_effects.png' alt='Tương quan'><h2>Lỗi của v1 trên validation</h2><p>Phân tích top 5% theo dự đoán OOF của v1 trên fold validation, kèm số lượng và tỷ lệ thực tế.</p><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>outcome</th>
+      <th>rows</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Fraud captured</td>
+      <td>1669</td>
+    </tr>
+    <tr>
+      <td>Fraud missed</td>
+      <td>668</td>
+    </tr>
+    <tr>
+      <td>Legitimate below top 5%</td>
+      <td>132325</td>
+    </tr>
+    <tr>
+      <td>Legitimate flagged</td>
+      <td>5330</td>
+    </tr>
+  </tbody>
+</table><img src="07_validation_errors.png" alt="Validation error analysis"></html>
