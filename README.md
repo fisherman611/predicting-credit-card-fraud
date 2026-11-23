@@ -106,6 +106,32 @@ Trên seed 2026, hiệu chỉnh giảm OOF AUC từ **0.95049** xuống **0.9503
 
 V1 vẫn đứng đầu trong ba bài nộp. V3 hiệu chỉnh thấp hơn v1 0.00003 trên public leaderboard. [Danh sách bài nộp trên Kaggle](https://www.kaggle.com/competitions/playground-series-s6e11/submissions).
 
+## Thử nghiệm mạng neural
+
+RealMLP và TabM dùng cùng năm fold seed 42 với v1. Mỗi fold dùng 10% phần train làm tập chọn epoch. Đầu vào gồm cột gốc, phần thập phân và tần suất xuất hiện của giá trị đã làm tròn, tính trong phần huấn luyện. Khả năng phối hợp được kiểm tra bằng ba công thức rank blend cố định, 75/25 cho từng mạng với v1 và 70/15/15 cho cả hai mạng. [RealMLP trong pytabkit](https://github.com/dholzmueller/pytabkit) · [TabM](https://github.com/yandex-research/tabm).
+
+| Mô hình, seed 42 | OOF ROC AUC | AUC trong nhóm CVV bằng 0 | Ca CVV bằng 0 bị bỏ sót ở top 5% |
+| --- | ---: | ---: | ---: |
+| **v1** | **0.95057** | **0.93129** | **2.607** |
+| RealMLP | 0.94197 | 0.91856 | 2.855 |
+| TabM-mini | 0.94594 | 0.92439 | 2.789 |
+| v1 + RealMLP | 0.95017 | 0.93079 | 2.648 |
+| v1 + TabM-mini | 0.95052 | 0.93117 | 2.622 |
+| v1 + cả hai mạng | 0.95033 | 0.93098 | 2.632 |
+
+V1 + TabM-mini là blend gần v1 nhất. AUC tổng giảm 0.00005 và bỏ sót thêm 15 ca CVV bằng 0 ở top 5%. V1 vẫn là bài nộp có điểm public cao nhất với 0.95122.
+
+Mã khớp ID, nhãn và fold với OOF của v1 trước khi chấm. Báo cáo gồm ROC AUC tổng, AUC trong nhóm CVV bằng 0 và số ca của nhóm đó bị bỏ sót trong top 5%.
+
+```bash
+python -m pip install pytabkit==1.8.0 rtdl-num-embeddings==0.0.12
+python kaggle/neural/train.py --model realmlp --data data --output submissions/realmlp
+python kaggle/neural/train.py --model tabm --data data --output submissions/tabm
+python kaggle/neural/compare.py --v1 submissions/v1 --realmlp submissions/realmlp --tabm submissions/tabm
+```
+
+Đầu ra của từng mạng gồm `metrics.json`, `oof.npz` và `submission.csv`. Mã so sánh tạo `comparison.json` và một CSV cho mỗi blend. [Phiên RealMLP](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-realmlp) · [Phiên TabM](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-tabm).
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.

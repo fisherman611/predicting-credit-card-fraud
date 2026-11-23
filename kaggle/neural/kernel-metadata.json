@@ -1,0 +1,13 @@
+{
+  "id": "huthnhlng/s6e11-fraud-realmlp",
+  "title": "S6E11 Fraud RealMLP",
+  "code_file": "train.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [],
+  "competition_sources": ["playground-series-s6e11"],
+  "kernel_sources": []
+}
