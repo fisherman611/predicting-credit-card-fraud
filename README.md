@@ -210,6 +210,26 @@ kaggle kernels output huthnhlng/s6e11-board-model-v39-replay -p submissions/boar
 
 Script kiểm tra checksum của notebook gốc khi đóng gói và dùng các kiểm tra checksum đầu vào của tác giả khi chạy. `replay.json` ghi checksum của CSV và thứ hạng trên 299.984 giao dịch. Phiên chạy báo lỗi nếu danh sách ID, miền xác suất hoặc thứ hạng sai. Lượt chạy đối chiếu tạo CSV trùng từng byte với đầu ra v39 của tác giả. [Phiên tái lập trên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-board-model-v39-replay).
 
+## Hai ứng viên public và validation
+
+Bản [Fraud Signal Lab v43 của Malyshev Danil](https://www.kaggle.com/code/malyshevdanil/fraud-signal-lab-gpt-2-and-glm-fusion?scriptVersionId=372954959) được dựng từ hai bộ dữ liệu đầu vào công khai, khớp checksum `5689d07cc601becb3b2530b87fa5c03241a79d54fb2aba10fe2773d6eaf0464c` của tác giả. Bài nộp 58770152 đạt **0.95567 public AUC**. Công thức được chọn qua các lần chấm public leaderboard.
+
+Để tái lập, chạy cell mã đầu tiên của notebook v43 với dữ liệu cuộc thi và hai bộ [November 21 frontier](https://www.kaggle.com/datasets/malyshevdanil/s6e11-nov21-expanded-public-frontier), [November 23 round 2 frontier](https://www.kaggle.com/datasets/malyshevdanil/s6e11-nov23-round2-public-frontier). Notebook kiểm tra checksum các đầu vào và đầu ra.
+
+Ứng viên [Wide Stack + 2nd LM của goodpjw2008](https://www.kaggle.com/code/goodpjw2008/s6e11-part-12-wide-stack-2nd-lm-lb-0-95298) có OOF stacker **0.952565**, so với v1 **0.950571** trên cùng năm fold. Bài nộp 58770176 dùng `wide_lm_stack_test.npy` của tác giả và đạt **0.95285 public AUC**. Trên OOF, Wide Stack đạt 0.934225 AUC cho nhóm CVV bằng 0 so với 0.931288 của v1, và bắt được 8.636 ca fraud ở top 5% so với 8.527 ca của v1.
+
+Các mô hình gốc của OOF công khai đã học trên phần train đầy đủ theo từng fold. Stacker được chấm ngoài fold của nó, nhưng các mô hình gốc tạo đặc trưng cho các fold khác có thể đã học từ fold đánh giá stacker. Do vậy kết quả này chưa phải holdout độc lập hoàn toàn.
+
+Để tạo lại bài nộp Wide Stack, tải [artifacts công khai](https://www.kaggle.com/datasets/goodpjw2008/s6e11-fraud-series-artifacts) và mẫu cuộc thi, sau đó chạy:
+
+```bash
+python kaggle/dual/export_wide.py --artifacts data/s6e11-fraud-series-artifacts \
+  --sample data/sample_submission.csv --output submissions/wide_lm.csv
+python kaggle/dual/stack.py --input data --output submissions/core_stack
+```
+
+Thử nghiệm stack nhỏ dùng 20 mô hình đại diện của [OOF bank](https://www.kaggle.com/datasets/goodpjw2008/s6e11-oof-bank) đạt 0.951560 OOF. Thêm dự đoán GPT-2 compact trong [bundle công khai](https://www.kaggle.com/datasets/amanatar/s6e11-rank1-q17-meta-bundle) nâng lên 0.951954 trên cả năm fold. Đây là một thí nghiệm mới, không phải phép tái huấn luyện toàn bộ Wide Stack của tác giả.
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
