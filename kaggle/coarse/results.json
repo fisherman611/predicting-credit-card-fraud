@@ -1,0 +1,149 @@
+{
+  "holdout_seed": 73191,
+  "development_seed": 42,
+  "development_rows": 559968,
+  "holdout_rows": 139992,
+  "weights": [
+    0.0,
+    0.1,
+    0.25,
+    0.5
+  ],
+  "selected_weight": 0.1,
+  "development": {
+    "0.0": {
+      "overall": {
+        "auc": 0.9492209927736239,
+        "cvv": {
+          "within_cvv_zero": 0.9293325843977501,
+          "within_cvv_other": 0.9327599416446367,
+          "cross_cvv_groups": 0.9698237345557422,
+          "directional_cross_auc": {
+            "cvv_zero_fraud_vs_cvv_other_legit": 0.7369459405350608,
+            "cvv_other_fraud_vs_cvv_zero_legit": 0.9899962436473904
+          }
+        },
+        "top_5pct": {
+          "caught": 6778,
+          "false_alarms": 21220,
+          "missed_cvv_zero": 2130
+        }
+      },
+      "fold_auc": [
+        0.9468333243303959,
+        0.9501636770018902,
+        0.9506914338915308
+      ]
+    },
+    "0.1": {
+      "overall": {
+        "auc": 0.9492483268058557,
+        "cvv": {
+          "within_cvv_zero": 0.9293841820137413,
+          "within_cvv_other": 0.9327599416446367,
+          "cross_cvv_groups": 0.9698295066243112,
+          "directional_cross_auc": {
+            "cvv_zero_fraud_vs_cvv_other_legit": 0.7366025618184772,
+            "cvv_other_fraud_vs_cvv_zero_legit": 0.9900322601083776
+          }
+        },
+        "top_5pct": {
+          "caught": 6785,
+          "false_alarms": 21213,
+          "missed_cvv_zero": 2125
+        }
+      },
+      "fold_auc": [
+        0.9468642162655143,
+        0.9501896221720911,
+        0.9507280819032825
+      ]
+    },
+    "0.25": {
+      "overall": {
+        "auc": 0.949247003978378,
+        "cvv": {
+          "within_cvv_zero": 0.9293884873672481,
+          "within_cvv_other": 0.9327599416446367,
+          "cross_cvv_groups": 0.9698226048140899,
+          "directional_cross_auc": {
+            "cvv_zero_fraud_vs_cvv_other_legit": 0.7360270026217844,
+            "cvv_other_fraud_vs_cvv_zero_legit": 0.9900746169505188
+          }
+        },
+        "top_5pct": {
+          "caught": 6793,
+          "false_alarms": 21205,
+          "missed_cvv_zero": 2117
+        }
+      },
+      "fold_auc": [
+        0.9468668504615322,
+        0.9501882674926527,
+        0.9507431616704
+      ]
+    },
+    "0.5": {
+      "overall": {
+        "auc": 0.949129901603328,
+        "cvv": {
+          "within_cvv_zero": 0.9291964305054319,
+          "within_cvv_other": 0.9327599416446367,
+          "cross_cvv_groups": 0.9697696498156235,
+          "directional_cross_auc": {
+            "cvv_zero_fraud_vs_cvv_other_legit": 0.734910602478295,
+            "cvv_other_fraud_vs_cvv_zero_legit": 0.9901137804683183
+          }
+        },
+        "top_5pct": {
+          "caught": 6782,
+          "false_alarms": 21216,
+          "missed_cvv_zero": 2131
+        }
+      },
+      "fold_auc": [
+        0.9467549539399116,
+        0.9500714084743533,
+        0.950648138336676
+      ]
+    }
+  },
+  "holdout_baseline": {
+    "auc": 0.9523113629027581,
+    "cvv": {
+      "within_cvv_zero": 0.9338913679309865,
+      "within_cvv_other": 0.9308987992672153,
+      "cross_cvv_groups": 0.9713369127016892,
+      "directional_cross_auc": {
+        "cvv_zero_fraud_vs_cvv_other_legit": 0.7513391968981146,
+        "cvv_other_fraud_vs_cvv_zero_legit": 0.9899421590821851
+      }
+    },
+    "top_5pct": {
+      "caught": 1712,
+      "false_alarms": 5287,
+      "missed_cvv_zero": 503
+    }
+  },
+  "holdout_candidate": {
+    "auc": 0.9522978684124189,
+    "cvv": {
+      "within_cvv_zero": 0.9338595379810977,
+      "within_cvv_other": 0.9308987992672153,
+      "cross_cvv_groups": 0.971339706447731,
+      "directional_cross_auc": {
+        "cvv_zero_fraud_vs_cvv_other_legit": 0.7508238316300623,
+        "cvv_other_fraud_vs_cvv_zero_legit": 0.9899887736292124
+      }
+    },
+    "top_5pct": {
+      "caught": 1710,
+      "false_alarms": 5289,
+      "missed_cvv_zero": 506
+    }
+  },
+  "rounds": 1500,
+  "elapsed_seconds": 585.8,
+  "calibration": "cross-fitted dev OOF; holdout calibrator fits all dev OOF",
+  "warning": "Development base-model OOF used for calibration can share fit rows across folds."
+}

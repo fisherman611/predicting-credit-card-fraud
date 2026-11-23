@@ -244,6 +244,27 @@ python eda/analyze.py --train data/train.csv --test data/test.csv \
 
 Bỏ `--oof` khi không có dự đoán OOF của v1. Khi có OOF, mã kiểm tra ID, nhãn và fold trước khi vẽ biểu đồ lỗi. Các biểu đồ phân phối số dùng cùng cạnh bin và gộp đuôi ngoài phân vị 0,1%–99,9%; thống kê min, max và các phân vị được lưu trong CSV.
 
+## Coarse-to-fine cho nhóm CVV bằng 0
+
+Thử nghiệm [CVV Specialist Holdout](https://www.kaggle.com/code/huthnhlng/s6e11-cvv-specialist-holdout) dùng v1 làm baseline, thêm LightGBM chuyên gia cho nhóm CVV bằng 0. Xác suất của chuyên gia được hiệu chỉnh từ dự đoán OOF rồi ghép theo logit. Ba fold development chọn trọng số trong 0%, 10%, 25% và 50%; holdout seed 73191 chỉ được dùng sau khi chọn trọng số.
+
+| Mô hình | Development OOF AUC | Holdout AUC | Fraud bắt được ở top 5% holdout | Fraud CVV bằng 0 bị bỏ sót |
+| --- | ---: | ---: | ---: | ---: |
+| Baseline | 0.949221 | **0.952311** | **1.712** | **503** |
+| Baseline + 10% chuyên gia | **0.949248** | 0.952298 | 1.710 | 506 |
+
+Chênh lệch holdout là −0.0000135, khoảng tin cậy bootstrap phân tầng ghép cặp 95% xấp xỉ [−0.0000668, +0.0000442] với 300 lượt lấy mẫu. Development tăng trên 3/3 fold, nhưng mức tăng nhỏ. Các dự đoán OOF dùng huấn luyện bộ hiệu chỉnh có thể chia sẻ dòng train giữa các fold, nên kết quả development có thể lạc quan. Mô hình và holdout cùng tập train đã được khám phá trong các EDA trước; holdout không tham gia fit hoặc chọn trọng số trong thử nghiệm này.
+
+Trong 628 fraud bị bỏ sót trên holdout có 506 ca CVV bằng 0. Nhóm bỏ sót có risk score trung bình 41,78 so với 47,36 ở toàn bộ fraud, velocity trung bình 23,81 so với 27,21, và chỉ 3,8% là giao dịch nước ngoài so với 13,4% ở toàn bộ fraud. Thử nghiệm tiếp theo có thể tập trung vào fraud thiếu các cờ cảnh báo, kiểm tra loss hoặc đặc trưng tương tác theo từng fold và duy trì hiệu chỉnh thứ hạng giữa các nhóm.
+
+```bash
+python kaggle/coarse/bundle.py /tmp/s6e11-cvv-specialist
+kaggle kernels push -p /tmp/s6e11-cvv-specialist
+kaggle kernels output huthnhlng/s6e11-cvv-specialist-holdout -p outputs/cvv-specialist
+```
+
+Mã và thống kê tổng hợp nằm trong `kaggle/coarse/`. Kết quả holdout chưa cho thấy cải thiện so với baseline và chưa được dùng để tạo bài nộp mới.
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
