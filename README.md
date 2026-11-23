@@ -55,21 +55,35 @@ Phiên bản 1 chạy trên CPU trong khoảng 9 phút 29 giây với 699.960 d�
 
 Kaggle chấm xong ngày 23/11/2026. Bài nộp `58752634` dùng ensemble. [Phiên chạy Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-credit-card-fraud-cv) · [Danh sách bài nộp](https://www.kaggle.com/competitions/playground-series-s6e11/submissions).
 
+## Thử nghiệm v2 cho nhóm CVV bằng 0
+
+Bản tương tác thêm ba cặp `CVV × merchant risk`, `CVV × velocity` và `merchant risk × velocity` vào LightGBM. Merchant risk và velocity được chia theo phân vị của tập fit của mỗi fold. Mã tính target encoding qua ba fold nội bộ. Bản có mô hình riêng kết hợp thêm một LightGBM chỉ học trên nhóm CVV bằng 0, với trọng số logit cố định 25% cho nhóm đó.
+
+| Ứng viên, seed 42 | OOF ROC AUC | Ca CVV bằng 0 bị bỏ sót ở top 5% | Cảnh báo nhầm ở top 5% |
+| --- | ---: | ---: | ---: |
+| v1 | 0.95057 | 2.607 | 26.471 |
+| v2, tương tác | 0.95043 | 2.616 | 26.497 |
+| v2, tương tác và mô hình CVV riêng | 0.95035 | 2.623 | 26.503 |
+
+Top 5% là 34.998 giao dịch có điểm cao nhất trong OOF. Hai ứng viên v2 đều thua v1 trên lần chia này. [Phân tích lỗi v1](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-error-audit) · [Phiên chạy v2](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v2-cvv).
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
 
 ```bash
 kaggle kernels push -p kaggle
-kaggle kernels status huthnhlng/s6e11-credit-card-fraud-cv
-kaggle kernels output huthnhlng/s6e11-credit-card-fraud-cv -p submissions
+kaggle kernels status huthnhlng/s6e11-fraud-v2-cvv
+kaggle kernels output huthnhlng/s6e11-fraud-v2-cvv -p submissions
 ```
 
-Kết quả gồm `metrics.json` chứa AUC theo fold và AUC tổng, cùng `submission.csv` theo mẫu của cuộc thi. Notebook chạy ở chế độ riêng tư.
+Kết quả v2 gồm `metrics.json` chứa AUC theo fold, AUC tổng và số ca bỏ sót ở top 5%. Mỗi ứng viên có một CSV theo mẫu cuộc thi, và `submission.csv` chứa ứng viên có OOF AUC cao nhất trong phiên chạy. Notebook chạy ở chế độ riêng tư.
 
 Để chạy cùng mã trên máy có dữ liệu đã tải:
 
 ```bash
 python -m pip install -r requirements.txt
 python kaggle/train.py --data data --output submissions
+python kaggle/train.py --experiment v2 --seed 2026 --compare-baseline --data data --output submissions/seed-2026
+python kaggle/train.py --experiment v1 --data data --output submissions/v1
 ```
