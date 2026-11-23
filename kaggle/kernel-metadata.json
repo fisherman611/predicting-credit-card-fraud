@@ -1,6 +1,6 @@
 {
-  "id": "huthnhlng/s6e11-fraud-v2-cvv",
-  "title": "S6E11 Fraud V2 CVV",
+  "id": "huthnhlng/s6e11-fraud-v3-positional-digits",
+  "title": "S6E11 Fraud V3 Positional Digits",
   "code_file": "train.py",
   "language": "python",
   "kernel_type": "script",

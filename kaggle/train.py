@@ -27,6 +27,7 @@ DIGIT_COLUMNS = (
     "velocity_score",
     "merchant_risk_score",
 )
+POSITIONAL_DIGIT_COLUMNS = ("merchant_risk_score", "velocity_score", "account_balance_usd")
 SEED = 42
 FOLDS = 5
 TREE_WEIGHT = 0.8
@@ -67,6 +68,27 @@ def decimal_keys(frame):
         for suffix, array in groups.items():
             keys[f"{name}__{suffix}"] = np.where(valid, array, -2_000_000_000).astype(np.int32)
     return pd.DataFrame(keys, index=frame.index)
+
+
+def positional_digit_keys(decimal):
+    """Pool equal decimal chunks at the same integer scale."""
+    keys = {}
+    for name in POSITIONAL_DIGIT_COLUMNS:
+        exact = decimal[f"{name}__exact"].to_numpy(dtype=np.int64)
+        observed = exact != -2_000_000_000
+        magnitude = np.abs(exact)
+        whole = magnitude // 100
+        length = np.searchsorted(10 ** np.arange(1, 13), whole) + 1
+        prefix = magnitude // 10 ** (length - 1)
+        chunks = {
+            "prefix3": 1000 * length + prefix,
+            "boundary2": 100 * length + (magnitude // 10) % 100,
+            "boundary3": 1000 * length + magnitude % 1000,
+            "fraction_by_scale": 100 * length + magnitude % 100,
+        }
+        for chunk, value in chunks.items():
+            keys[f"{name}__{chunk}"] = np.where(observed, value, -1).astype(np.int32)
+    return pd.DataFrame(keys, index=decimal.index)
 
 
 def raw_views(train, valid, test):
@@ -162,8 +184,11 @@ def fit_fold(raw, digits, target, rounds, *, experiment, compare_baseline):
     baseline = None
     if experiment == "v1" or compare_baseline:
         baseline = predict_tree(tree_views, target, rounds)
-    if experiment == "v2":
-        extra_keys = interaction_keys((fit, valid, test))
+    if experiment in ("v2", "v3"):
+        if experiment == "v2":
+            extra_keys = interaction_keys((fit, valid, test))
+        else:
+            extra_keys = [positional_digit_keys(decimal) for decimal in digits]
         interaction_encoder = TargetEncoder(target_type="binary", smooth=50.0, cv=3, random_state=SEED)
         interaction_rates = [
             interaction_encoder.fit_transform(extra_keys[0], target),
@@ -174,8 +199,9 @@ def fit_fold(raw, digits, target, rounds, *, experiment, compare_baseline):
             for name, rate in zip(extra_keys[0], rates.T, strict=True):
                 view[f"te__{name}"] = rate.astype(np.float32)
         tree_predictions = predict_tree(tree_views, target, rounds)
-        masks = [frame["cvv_retry_count"].eq(0).to_numpy() for frame in (fit, valid, test)]
-        specialist = predict_tree(tree_views, target, min(rounds, 900), masks)
+        if experiment == "v2":
+            masks = [frame["cvv_retry_count"].eq(0).to_numpy() for frame in (fit, valid, test)]
+            specialist = predict_tree(tree_views, target, min(rounds, 900), masks)
     del tree_views
 
     onehot = OneHotEncoder(
@@ -195,11 +221,13 @@ def fit_fold(raw, digits, target, rounds, *, experiment, compare_baseline):
             blend = blend_probabilities(tree_pred, glm_pred, TREE_WEIGHT)
             results.append(np.column_stack([tree_pred, glm_pred, blend]))
             continue
-        interaction_blend = blend_probabilities(tree_predictions[j], glm_pred, TREE_WEIGHT)
-        specialist_blend = interaction_blend.copy()
-        mask = masks[j + 1]
-        specialist_blend[mask] = blend_probabilities(interaction_blend[mask], specialist[j], 0.75)
-        columns = [interaction_blend, specialist_blend]
+        blend = blend_probabilities(tree_predictions[j], glm_pred, TREE_WEIGHT)
+        columns = [blend]
+        if experiment == "v2":
+            specialist_blend = blend.copy()
+            mask = masks[j + 1]
+            specialist_blend[mask] = blend_probabilities(blend[mask], specialist[j], 0.75)
+            columns.append(specialist_blend)
         if baseline is not None:
             columns.insert(0, blend_probabilities(baseline[j], glm_pred, TREE_WEIGHT))
         results.append(np.column_stack(columns))
@@ -218,7 +246,42 @@ def top5_summary(y, scores, no_cvv_retry):
     }
 
 
-def run(data_dir, output_dir, rounds, *, experiment="v1", seed=SEED, compare_baseline=False):
+def auc_across_groups(positive_scores, negative_scores):
+    """Return AUC and the number of compared pairs, counting ties as one half."""
+    pairs = len(positive_scores) * len(negative_scores)
+    if not pairs:
+        return None, 0
+    ordered = np.sort(negative_scores)
+    lower = np.searchsorted(ordered, positive_scores, side="left")
+    upper = np.searchsorted(ordered, positive_scores, side="right")
+    return float((lower + upper).sum() / (2 * pairs)), pairs
+
+
+def cvv_auc_summary(y, scores, no_cvv_retry):
+    """Decompose AUC into within-group and cross-group fraud/legitimate pairs."""
+    groups = {
+        "cvv_zero": no_cvv_retry,
+        "cvv_other": ~no_cvv_retry,
+    }
+    components = {
+        f"{p}_fraud_vs_{n}_legit": auc_across_groups(
+            scores[(y == 1) & positive_group], scores[(y == 0) & negative_group],
+        )
+        for p, positive_group in groups.items()
+        for n, negative_group in groups.items()
+    }
+    cross_keys = ("cvv_zero_fraud_vs_cvv_other_legit", "cvv_other_fraud_vs_cvv_zero_legit")
+    cross = [(components[key][0], components[key][1]) for key in cross_keys if components[key][1]]
+    return {
+        "within_cvv_zero": components["cvv_zero_fraud_vs_cvv_zero_legit"][0],
+        "within_cvv_other": components["cvv_other_fraud_vs_cvv_other_legit"][0],
+        "cross_cvv_groups": sum(auc * pairs for auc, pairs in cross) / sum(pairs for _, pairs in cross) if cross else None,
+        "directional_cross_auc": {key: components[key][0] for key in cross_keys},
+    }
+
+
+def run(data_dir, output_dir, rounds, *, experiment="v1", seed=SEED,
+        compare_baseline=False, save_oof=False):
     start = time.monotonic()
     train, test, sample = (pd.read_csv(data_dir / name) for name in FILES)
     train_ids = train.pop("id")
@@ -236,12 +299,13 @@ def run(data_dir, output_dir, rounds, *, experiment="v1", seed=SEED, compare_bas
     if experiment == "v1":
         members = ("lightgbm", "digit_glm", "blend_80_20")
     else:
-        members = ("interactions", "cvv_specialist")
+        members = ("interactions", "cvv_specialist") if experiment == "v2" else ("positional_digits",)
         if compare_baseline:
             members = ("baseline", *members)
     oof = np.full((len(train), len(members)), np.nan)
     predictions = np.zeros((len(test), len(members)))
     fold_scores = []
+    fold_ids = np.zeros(len(train), dtype=np.int8)
     splitter = StratifiedKFold(n_splits=FOLDS, shuffle=True, random_state=seed)
     for fold, (fit, val) in enumerate(splitter.split(train, target), start=1):
         valid, test_pred = fit_fold(
@@ -250,6 +314,7 @@ def run(data_dir, output_dir, rounds, *, experiment="v1", seed=SEED, compare_bas
             target[fit], rounds, experiment=experiment, compare_baseline=compare_baseline,
         )
         oof[val] = valid
+        fold_ids[val] = fold
         predictions += test_pred / FOLDS
         scores = {name: roc_auc_score(target[val], col)
                   for name, col in zip(members, valid.T, strict=True)}
@@ -272,8 +337,16 @@ def run(data_dir, output_dir, rounds, *, experiment="v1", seed=SEED, compare_bas
                     output_dir / f"submission_{name}.csv", index=False,
                 )
     no_cvv_retry = train["cvv_retry_count"].eq(0).to_numpy() if "cvv_retry_count" in train else np.zeros(len(train), dtype=bool)
+    if save_oof:
+        np.savez_compressed(
+            output_dir / "oof.npz",
+            id=train_ids.to_numpy(), fold=fold_ids, is_fraud=target,
+            cvv_zero=no_cvv_retry, **dict(zip(members, oof.T, strict=True)),
+        )
     metrics = {
         "experiment": experiment,
+        "cvv_auc": {name: cvv_auc_summary(target, oof[:, j], no_cvv_retry)
+                    for j, name in enumerate(members)},
         "split_seed": seed,
         "top_5pct": {name: top5_summary(target, oof[:, j], no_cvv_retry)
                      for j, name in enumerate(members)},
@@ -295,9 +368,11 @@ if __name__ == "__main__":
     destination = Path("/kaggle/working") if Path("/kaggle/working").is_dir() else Path("submissions")
     parser.add_argument("--output", type=Path, default=destination)
     parser.add_argument("--rounds", type=int, default=1500)
-    parser.add_argument("--experiment", choices=("v1", "v2"), default="v2")
+    parser.add_argument("--experiment", choices=("v1", "v2", "v3"), default="v3")
     parser.add_argument("--seed", type=int, default=SEED)
     parser.add_argument("--compare-baseline", action="store_true")
+    parser.add_argument("--save-oof", action="store_true")
     args = parser.parse_args()
     run(args.data, args.output, args.rounds, experiment=args.experiment,
-        seed=args.seed, compare_baseline=args.compare_baseline)
+        seed=args.seed, compare_baseline=args.compare_baseline,
+        save_oof=args.save_oof or args.experiment == "v3")

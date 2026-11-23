@@ -77,23 +77,34 @@ Lần chia thứ hai (seed 2026) huấn luyện lại v1 và cả hai ứng viê
 
 Cả hai lần chia đều cho AUC thấp hơn và bỏ sót thêm ca CVV bằng 0 ở v2. Bài nộp hiện tại giữ v1 với public AUC **0.95122**. [Phiên đối chứng seed 2026](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v2-seed-check).
 
+## Thử nghiệm v3 với cụm chữ số theo vị trí
+
+LightGBM được bổ sung target encoding của cụm 2–3 chữ số và phần thập phân theo độ dài phần nguyên. Ba cột thử nghiệm là `merchant_risk_score`, `velocity_score` và `account_balance_usd`. V3 giữ nguyên Digit GLM và tỷ trọng phối hợp 80/20 của v1.
+
+| Ứng viên, seed 42 | OOF ROC AUC | AUC trong nhóm CVV bằng 0 | AUC giữa các nhóm CVV | Ca CVV bằng 0 bị bỏ sót ở top 5% |
+| --- | ---: | ---: | ---: | ---: |
+| v1 | 0.95057 | 0.93129 | 0.97053 | 2.607 |
+| v3, cụm chữ số | 0.95047 | 0.93110 | 0.97051 | 2.635 |
+
+AUC giữa các nhóm tính trên các cặp gian lận và hợp lệ thuộc hai nhóm CVV khác nhau. Hai phiên chạy khớp ID, nhãn và fold trên cả 699.960 dòng, nên có thể so sánh trực tiếp. V3 giảm AUC tổng và bỏ sót thêm 28 ca ở nhóm mục tiêu. [Phiên v1 đối chứng](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-control) · [Phiên thử cụm chữ số](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-positional-digits).
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
 
 ```bash
 kaggle kernels push -p kaggle
-kaggle kernels status huthnhlng/s6e11-fraud-v2-cvv
-kaggle kernels output huthnhlng/s6e11-fraud-v2-cvv -p submissions
+kaggle kernels status huthnhlng/s6e11-fraud-v3-positional-digits
+kaggle kernels output huthnhlng/s6e11-fraud-v3-positional-digits -p submissions
 ```
 
-Kết quả v2 gồm `metrics.json` chứa AUC theo fold, AUC tổng và số ca bỏ sót ở top 5%. Mỗi ứng viên có một CSV theo mẫu cuộc thi, và `submission.csv` chứa ứng viên có OOF AUC cao nhất trong phiên chạy. Notebook chạy ở chế độ riêng tư.
+Kết quả gồm `metrics.json` chứa AUC theo fold, AUC tổng, AUC theo nhóm CVV và số ca bỏ sót ở top 5%. `submission.csv` theo mẫu của cuộc thi. Phiên v3 lưu thêm `oof.npz`, gồm ID, fold, nhãn, nhóm CVV và điểm OOF của từng giao dịch. Dữ liệu và dự đoán nằm trong đầu ra riêng tư của Kaggle hoặc thư mục `submissions/` được Git bỏ qua.
 
 Để chạy cùng mã trên máy có dữ liệu đã tải:
 
 ```bash
 python -m pip install -r requirements.txt
 python kaggle/train.py --data data --output submissions
-python kaggle/train.py --experiment v2 --seed 2026 --compare-baseline --data data --output submissions/seed-2026
-python kaggle/train.py --experiment v1 --data data --output submissions/v1
+python kaggle/train.py --experiment v3 --compare-baseline --data data --output submissions/v3-comparison
+python kaggle/train.py --experiment v1 --save-oof --data data --output submissions/v1
 ```
