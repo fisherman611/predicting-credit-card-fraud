@@ -263,7 +263,21 @@ kaggle kernels push -p /tmp/s6e11-cvv-specialist
 kaggle kernels output huthnhlng/s6e11-cvv-specialist-holdout -p outputs/cvv-specialist
 ```
 
-Mã và thống kê tổng hợp nằm trong `kaggle/coarse/`. Kết quả holdout chưa cho thấy cải thiện so với baseline và chưa được dùng để tạo bài nộp mới.
+Mã và thống kê tổng hợp nằm trong `kaggle/coarse/`. Kết quả holdout chưa cho thấy cải thiện so với baseline.
+
+Sau đó chạy [full refit trên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-cvv-specialist-full) theo yêu cầu để đối chiếu public. Baseline và chuyên gia học trên toàn bộ 699.960 dòng train, bộ hiệu chỉnh dùng OOF development của lượt trước và trọng số chuyên gia giữ ở 10%.
+
+| Bài nộp cùng lượt refit | ID | Public ROC AUC |
+| --- | ---: | ---: |
+| Baseline | 58772074 | 0.95103 |
+| Baseline + 10% chuyên gia | 58772064 | **0.95104** |
+
+Chênh lệch public là +0.00001; ứng viên vẫn thấp hơn ensemble public hiện tại 0.95567. Đây là full refit của pipeline LightGBM + Digit GLM và chuyên gia, không phải chỉnh sửa ensemble 0.95567. Kết quả holdout dùng mô hình chỉ học trên 80% train và public dùng mô hình refit trên toàn bộ train.
+
+```bash
+python kaggle/coarse/bundle_full.py /tmp/s6e11-cvv-specialist-full
+kaggle kernels push -p /tmp/s6e11-cvv-specialist-full
+```
 
 ## Chạy trên Kaggle
 
