@@ -75,7 +75,7 @@ Lần chia thứ hai (seed 2026) huấn luyện lại v1 và cả hai ứng viê
 | v2, tương tác | 0.95038 | 2.609 | 26.493 |
 | v2, tương tác và mô hình CVV riêng | 0.95030 | 2.620 | 26.501 |
 
-Cả hai lần chia đều cho AUC thấp hơn và bỏ sót thêm ca CVV bằng 0 ở v2. Bài nộp hiện tại giữ v1 với public AUC **0.95122**. [Phiên đối chứng seed 2026](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v2-seed-check).
+Cả hai lần chia đều cho AUC thấp hơn và bỏ sót thêm ca CVV bằng 0 ở v2. V2 được nộp thêm để đối chiếu điểm public. [Phiên đối chứng seed 2026](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v2-seed-check).
 
 ## Thử nghiệm v3 với cụm chữ số theo vị trí
 
@@ -94,7 +94,17 @@ Mỗi fold OOF của v1 được chia đôi có phân tầng. Hai LightGBM nông
 
 Ở seed 42, OOF AUC tăng từ **0.95057** lên **0.95064**. Số ca CVV bằng 0 bị bỏ sót ở top 5% giảm từ 2.607 xuống 2.601. AUC trong nhóm này tăng từ 0.93129 lên 0.93143 và AUC giữa các nhóm ở mức 0.97053. [Phiên hiệu chỉnh seed 42](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-residual).
 
-Trên seed 2026, hiệu chỉnh giảm OOF AUC từ **0.95049** xuống **0.95038** và bỏ sót thêm 4 ca CVV bằng 0 ở top 5%. AUC trong nhóm này giảm từ 0.93116 xuống 0.93097 và AUC giữa hai nhóm giảm từ 0.97051 xuống 0.97047. Mức tăng ở seed 42 không lặp lại, nên bài nộp vẫn dùng v1 với public AUC **0.95122**. [Phiên hiệu chỉnh seed 2026](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-residual-2026).
+Trên seed 2026, hiệu chỉnh giảm OOF AUC từ **0.95049** xuống **0.95038** và bỏ sót thêm 4 ca CVV bằng 0 ở top 5%. AUC trong nhóm này giảm từ 0.93116 xuống 0.93097 và AUC giữa hai nhóm giảm từ 0.97051 xuống 0.97047. Mức tăng ở seed 42 không lặp lại. Bản hiệu chỉnh seed 42 được nộp thêm để đối chiếu điểm public. [Phiên hiệu chỉnh seed 2026](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-residual-2026).
+
+## Đối chiếu bài nộp trên public leaderboard
+
+| Bản nộp, seed 42 | ID bài nộp | OOF ROC AUC | Public ROC AUC |
+| --- | ---: | ---: | ---: |
+| v1, ensemble 80/20 | 58752634 | 0.95057 | **0.95122** |
+| v2, thêm tương tác | 58756159 | 0.95043 | 0.95076 |
+| v3, hiệu chỉnh điểm v1 | 58756163 | 0.95064 | 0.95119 |
+
+V1 vẫn đứng đầu trong ba bài nộp. V3 hiệu chỉnh thấp hơn v1 0.00003 trên public leaderboard. [Danh sách bài nộp trên Kaggle](https://www.kaggle.com/competitions/playground-series-s6e11/submissions).
 
 ## Chạy trên Kaggle
 
