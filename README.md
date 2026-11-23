@@ -67,6 +67,16 @@ Bản tương tác thêm ba cặp `CVV × merchant risk`, `CVV × velocity` và 
 
 Top 5% là 34.998 giao dịch có điểm cao nhất trong OOF. Hai ứng viên v2 đều thua v1 trên lần chia này. [Phân tích lỗi v1](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-error-audit) · [Phiên chạy v2](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v2-cvv).
 
+Lần chia thứ hai (seed 2026) huấn luyện lại v1 và cả hai ứng viên trên cùng các fold.
+
+| Ứng viên, seed 2026 | OOF ROC AUC | Ca CVV bằng 0 bị bỏ sót ở top 5% | Cảnh báo nhầm ở top 5% |
+| --- | ---: | ---: | ---: |
+| v1 | 0.95049 | 2.606 | 26.473 |
+| v2, tương tác | 0.95038 | 2.609 | 26.493 |
+| v2, tương tác và mô hình CVV riêng | 0.95030 | 2.620 | 26.501 |
+
+Cả hai lần chia đều cho AUC thấp hơn và bỏ sót thêm ca CVV bằng 0 ở v2. Bài nộp hiện tại giữ v1 với public AUC **0.95122**. [Phiên đối chứng seed 2026](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v2-seed-check).
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
