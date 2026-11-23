@@ -77,10 +77,49 @@ def run(args):
     print(json.dumps(results, indent=2))
 
 
+def compare_locked(baseline_dir, neural_dir, output_dir):
+    with np.load(baseline_dir / "holdout.npz", allow_pickle=False) as baseline, np.load(
+        neural_dir / "holdout.npz", allow_pickle=False
+    ) as neural:
+        fields = ("id", "is_fraud", "cvv_zero")
+        labels = {name: baseline[name] for name in fields}
+        for name, values in labels.items():
+            if not np.array_equal(neural[name], values):
+                raise ValueError(f"Locked holdout has a mismatch in {name}.")
+        if len(np.unique(labels["id"])) != len(labels["id"]):
+            raise ValueError("Locked holdout IDs are not unique.")
+        labels["fold"] = np.ones(len(labels["id"]), dtype=np.int8)
+        v1 = baseline["blend_80_20"]
+        scores = {"v1": v1}
+        ranks = percentile(v1)
+        for name in ("realmlp", "tabm"):
+            for stage in ("before_refit", "refit"):
+                key = f"{name}_{stage}"
+                scores[key] = neural[key]
+            scores[f"v1_{name}_refit"] = 0.75 * ranks + 0.25 * percentile(neural[f"{name}_refit"])
+        scores["v1_both_refit"] = (
+            0.70 * ranks + 0.15 * percentile(neural["realmlp_refit"]) + 0.15 * percentile(neural["tabm_refit"])
+        )
+        results = {name: summarize(labels, value) for name, value in scores.items()}
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "locked-comparison.json").write_text(json.dumps(results, indent=2) + "\n")
+    print(json.dumps(results, indent=2))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--v1", type=Path, required=True)
-    parser.add_argument("--realmlp", type=Path, required=True)
-    parser.add_argument("--tabm", type=Path, required=True)
+    parser.add_argument("--v1", type=Path)
+    parser.add_argument("--realmlp", type=Path)
+    parser.add_argument("--tabm", type=Path)
     parser.add_argument("--output", type=Path, default=Path("submissions/neural-comparison"))
-    run(parser.parse_args())
+    parser.add_argument("--locked-baseline", type=Path)
+    parser.add_argument("--locked-neural", type=Path)
+    args = parser.parse_args()
+    if args.locked_baseline or args.locked_neural:
+        if not (args.locked_baseline and args.locked_neural):
+            parser.error("Both locked holdout directories are required.")
+        compare_locked(args.locked_baseline, args.locked_neural, args.output)
+    else:
+        if not (args.v1 and args.realmlp and args.tabm):
+            parser.error("Provide --v1, --realmlp, and --tabm for the OOF comparison.")
+        run(args)

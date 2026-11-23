@@ -133,9 +133,173 @@ def run(args):
     print(json.dumps(metrics, indent=2), flush=True)
 
 
+def tabm_inputs(raw, val, fit_rows, predict_rows, seed, device):
+    """Fit numeric transforms and categorical vocabularies on fit_rows."""
+    import torch
+    from sklearn.preprocessing import QuantileTransformer
+
+    train_view, val_view, _ = input_views(raw, val, val.iloc[:1], fit_rows)
+    fit = train_view.iloc[fit_rows]
+    views = [fit, train_view.iloc[predict_rows], val_view] if len(predict_rows) else [fit, val_view]
+    numerical = fit.select_dtypes(include="number").columns
+    numerical = [name for name in numerical if fit[name].fillna(0).nunique() > 1]
+    categorical = fit.select_dtypes(include="category").columns
+    normalizer = QuantileTransformer(
+        n_quantiles=min(512, len(fit)), subsample=50_000,
+        output_distribution="normal", random_state=seed,
+    )
+    normalizer.fit(fit[numerical].fillna(0))
+    x_num = [
+        torch.as_tensor(normalizer.transform(frame[numerical].fillna(0)), dtype=torch.float32, device=device)
+        for frame in views
+    ]
+    x_cat = [
+        torch.as_tensor(
+            np.column_stack([frame[name].cat.codes.to_numpy().astype(np.int64) + 1 for name in categorical]),
+            dtype=torch.long, device=device,
+        )
+        for frame in views
+    ]
+    cardinalities = [len(fit[name].cat.categories) + 1 for name in categorical]
+    return list(zip(x_num, x_cat, strict=True)), cardinalities
+
+
+def fit_tabm_phase(raw, val, y, fit_rows, select_rows, seed, epochs, device, choose_epoch):
+    """Run a selection pass or a fixed-length refit without a validation set."""
+    import torch
+    from rtdl_num_embeddings import PiecewiseLinearEmbeddings, compute_bins
+    from tabm import TabM
+
+    torch.manual_seed(seed)
+    views, categories = tabm_inputs(raw, val, fit_rows, select_rows, seed, device)
+    fit_num, fit_cat = views[0]
+    sample_rows = np.random.default_rng(seed).choice(len(fit_num), min(50_000, len(fit_num)), replace=False)
+    bins = compute_bins(fit_num[sample_rows].cpu(), n_bins=min(32, len(sample_rows) - 1))
+    model = TabM.make(
+        n_num_features=fit_num.shape[1], cat_cardinalities=categories, d_out=2,
+        arch_type="tabm-mini", k=8, d_block=128, n_blocks=3, dropout=0.1,
+        num_embeddings=PiecewiseLinearEmbeddings(bins, d_embedding=8, activation=False, version="B"),
+    ).to(device)
+    target = torch.as_tensor(y[fit_rows], dtype=torch.long, device=device)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=0.002, weight_decay=0.0)
+    use_amp = str(device).startswith("cuda") and torch.cuda.is_bf16_supported()
+    device_type = torch.device(device).type
+
+    def predict(view):
+        model.eval()
+        num, cat = view
+        with torch.inference_mode():
+            return torch.cat([
+                model(a, b).float().softmax(dim=-1)[:, :, 1].mean(dim=1).cpu()
+                for a, b in zip(num.split(2048), cat.split(2048), strict=True)
+            ]).numpy()
+
+    best_auc, best_epoch, best_state = -np.inf, 0, None
+    for epoch in range(1, epochs + 1):
+        model.train()
+        for indices in torch.randperm(len(target), device=device).split(1024):
+            optimizer.zero_grad(set_to_none=True)
+            with torch.autocast(device_type, dtype=torch.bfloat16, enabled=use_amp):
+                logits = model(fit_num[indices], fit_cat[indices])
+                labels = target[indices, None].expand(-1, logits.shape[1])
+                loss = torch.nn.functional.cross_entropy(logits.flatten(0, 1), labels.flatten())
+            loss.backward()
+            optimizer.step()
+        if choose_epoch:
+            auc = float(roc_auc_score(y[select_rows], predict(views[1])))
+            if auc > best_auc:
+                best_auc, best_epoch = auc, epoch
+                best_state = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
+            print(f"TabM epoch {epoch}/{epochs}: inner AUC {auc:.6f}", flush=True)
+            if epoch - best_epoch >= 5:
+                break
+    if choose_epoch:
+        model.load_state_dict(best_state)
+    return predict(views[-1]), best_epoch if choose_epoch else epochs
+
+
+def run_locked_holdout(args):
+    """Compare inner-selected and full-refit neural scores on a fixed outer holdout."""
+    if args.install:
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "--quiet",
+             "pytabkit==1.8.0", "rtdl-num-embeddings==0.0.12", "tabm==0.0.3"],
+            check=True,
+        )
+    import torch
+
+    if args.device.startswith("cuda") and not torch.cuda.is_available():
+        raise RuntimeError("CUDA was requested, but no Kaggle GPU is available.")
+    start = time.monotonic()
+    full = pd.read_csv(args.data / "train.csv")
+    ids = full.pop("id").to_numpy()
+    target = full.pop(TARGET).to_numpy()
+    outer = StratifiedShuffleSplit(n_splits=1, test_size=0.20, random_state=8128)
+    fit, val = next(outer.split(full, target))
+    val.sort()
+    train, validation, y = full.iloc[fit], full.iloc[val], target[fit]
+    learn, stop = next(StratifiedShuffleSplit(n_splits=1, test_size=0.10, random_state=args.seed + 1)
+                       .split(train, y))
+    cvv_zero = validation["cvv_retry_count"].eq(0).to_numpy()
+    args.output.mkdir(parents=True, exist_ok=True)
+    predictions = {}
+    models = ("realmlp", "tabm") if args.model == "both" else (args.model,)
+    for name in models:
+        if name == "realmlp":
+            from pytabkit import RealMLP_TD_Classifier
+
+            x, validation_view, _ = input_views(train, validation, validation.iloc[:1], learn)
+            model = RealMLP_TD_Classifier(
+                device=args.device, random_state=args.seed + 1, n_threads=4,
+                n_cv=1, n_refit=1, n_epochs=args.epochs, val_metric_name="1-auc_ovr",
+                batch_size=1024, hidden_width=192, predict_batch_size=4096,
+                use_early_stopping=True, early_stopping_additive_patience=5, verbosity=1,
+            )
+            model.fit(x, y, val_idxs=stop)
+            refit = model.predict_proba(validation_view)[:, 1]
+            fitted_interface = model.alg_interface_
+            if fitted_interface is not model.refit_alg_interface_:
+                raise RuntimeError("RealMLP did not select the refitted model.")
+            model.alg_interface_ = model.cv_alg_interface_
+            before = model.predict_proba(validation_view)[:, 1]
+            model.alg_interface_ = fitted_interface
+            del model
+        else:
+            before, best_epoch = fit_tabm_phase(
+                train, validation, y, learn, stop, args.seed + 1, args.epochs, args.device, True,
+            )
+            print(f"TabM refit on {len(fit)} rows for {best_epoch} epochs", flush=True)
+            refit, _ = fit_tabm_phase(
+                train, validation, y, np.arange(len(fit)), np.empty(0, dtype=int),
+                args.seed + 1, best_epoch, args.device, False,
+            )
+
+        predictions[f"{name}_before_refit"] = before
+        predictions[f"{name}_refit"] = refit
+        for stage, values in (("before refit", before), ("refit", refit)):
+            print(f"{name} {stage}: holdout AUC {roc_auc_score(target[val], values):.8f}", flush=True)
+        if args.device.startswith("cuda"):
+            torch.cuda.empty_cache()
+        np.savez_compressed(args.output / "holdout.npz", id=ids[val], is_fraud=target[val],
+                            cvv_zero=cvv_zero, **predictions)
+
+    report = {
+        "split_seed": 8128,
+        "inner_train_rows": len(learn),
+        "inner_early_stopping_rows": len(stop),
+        "refit_rows": len(fit),
+        "holdout_rows": len(val),
+        "holdout_fraud": int(target[val].sum()),
+        "holdout_auc": {name: float(roc_auc_score(target[val], score)) for name, score in predictions.items()},
+        "elapsed_seconds": round(time.monotonic() - start, 1),
+    }
+    (args.output / "metrics.json").write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps(report, indent=2), flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", choices=("realmlp", "tabm"), default="realmlp")
+    parser.add_argument("--model", choices=("realmlp", "tabm", "both"), default="realmlp")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--epochs", type=int, default=24)
     parser.add_argument("--device", default="cuda")
@@ -143,4 +307,11 @@ if __name__ == "__main__":
     in_kaggle = Path("/kaggle/working").is_dir()
     parser.add_argument("--output", type=Path, default=Path("/kaggle/working" if in_kaggle else "submissions/neural"))
     parser.add_argument("--install", action=argparse.BooleanOptionalAction, default=in_kaggle)
-    run(parser.parse_args())
+    parser.add_argument("--locked-holdout", action="store_true")
+    args = parser.parse_args()
+    if args.locked_holdout:
+        run_locked_holdout(args)
+    else:
+        if args.model == "both":
+            parser.error("--model both currently requires --locked-holdout")
+        run(args)

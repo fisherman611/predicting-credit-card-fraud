@@ -12,7 +12,7 @@ import pandas as pd
 from scipy.special import expit, logit
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit
 from sklearn.preprocessing import OneHotEncoder, TargetEncoder
 from threadpoolctl import threadpool_limits
 
@@ -453,6 +453,38 @@ def run_residual(data_dir, control_dir, output_dir, seed):
     print(json.dumps(report, indent=2), flush=True)
 
 
+def locked_holdout(data_dir, output_dir, rounds):
+    """Evaluate the existing v1 on a fixed stratified 80/20 split."""
+    train = pd.read_csv(data_dir / "train.csv")
+    ids = train.pop("id").to_numpy()
+    y = train.pop(TARGET).to_numpy()
+    split_seed = 8128
+    outer = StratifiedShuffleSplit(n_splits=1, test_size=0.20, random_state=split_seed)
+    fit, val = next(outer.split(train, y))
+    val.sort()
+    raw_fit, raw_val = train.iloc[fit], train.iloc[val]
+    digit_fit, digit_val = decimal_keys(raw_fit), decimal_keys(raw_val)
+    scores, _ = fit_fold(
+        (raw_fit, raw_val, raw_val.iloc[:1]),
+        (digit_fit, digit_val, digit_val.iloc[:1]),
+        y[fit], rounds, experiment="v1", compare_baseline=False,
+    )
+    predicted = scores[:, 2]
+    cvv_zero = raw_val["cvv_retry_count"].eq(0).to_numpy()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(output_dir / "holdout.npz", id=ids[val], is_fraud=y[val],
+                        cvv_zero=cvv_zero, blend_80_20=predicted)
+    metrics = {
+        "model": "v1", "split_seed": split_seed,
+        "train_rows": len(fit), "holdout_rows": len(val), "holdout_fraud": int(y[val].sum()),
+        "holdout_auc": float(roc_auc_score(y[val], predicted)),
+        "holdout_auc_cvv_zero": float(roc_auc_score(y[val][cvv_zero], predicted[cvv_zero])),
+        "top_5pct": top5_summary(y[val], predicted, cvv_zero),
+    }
+    (output_dir / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")
+    print(json.dumps(metrics, indent=2), flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=competition_data())
@@ -464,8 +496,11 @@ if __name__ == "__main__":
     parser.add_argument("--compare-baseline", action="store_true")
     parser.add_argument("--save-oof", action="store_true")
     parser.add_argument("--control", type=Path)
+    parser.add_argument("--locked-holdout", action="store_true")
     args = parser.parse_args()
-    if args.experiment == "residual":
+    if args.locked_holdout:
+        locked_holdout(args.data, args.output, args.rounds)
+    elif args.experiment == "residual":
         run_residual(args.data, args.control, args.output, args.seed)
     else:
         run(args.data, args.output, args.rounds, experiment=args.experiment,

@@ -132,6 +132,28 @@ python kaggle/neural/compare.py --v1 submissions/v1 --realmlp submissions/realml
 
 Đầu ra của từng mạng gồm `metrics.json`, `oof.npz` và `submission.csv`. Mã so sánh tạo `comparison.json` và một CSV cho mỗi blend. [Phiên RealMLP](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-realmlp) · [Phiên TabM](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-tabm).
 
+## Holdout cố định và huấn luyện lại mạng neural
+
+Holdout được khóa bằng stratified split seed 8128 trước vòng thử này. V1 học trên 559.968 dòng và được chấm trên 139.992 dòng còn lại. Mỗi mạng dùng 55.997 dòng trong phần train để chọn epoch, rồi huấn luyện lại trên đủ 559.968 dòng. Hai dự đoán trước và sau refit được đối chiếu trên cùng ID, nhãn và nhóm CVV.
+
+RealMLP dùng refit của pytabkit. Wrapper TabM trong pytabkit chưa hỗ trợ refit, nên thử nghiệm dùng TabM-mini từ gói chính thức và hai lượt train với cùng kiến trúc. Bản trước và sau refit của TabM trong bảng dùng cùng quy trình native.
+
+| Mô hình | AUC trước refit | AUC sau refit | Ca CVV bằng 0 bị bỏ sót ở top 5% sau refit |
+| --- | ---: | ---: | ---: |
+| v1 | 0.95222 | | 536 |
+| RealMLP | 0.94536 | 0.94497 | 561 |
+| TabM-mini | 0.94593 | 0.94620 | 586 |
+
+Blend tốt nhất theo AUC là v1 + 25% TabM đã refit. Trên cùng holdout, nó đạt 0.95195, thấp hơn v1 khoảng 0.00027, và bỏ sót 531 ca CVV bằng 0 ở top 5%. Đây là điểm của holdout cố định, đo riêng với OOF và public leaderboard. [Phiên đối chứng v1](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-locked-v1) · [Phiên refit neural](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-locked-neural).
+
+
+```bash
+python -m pip install pytabkit==1.8.0 rtdl-num-embeddings==0.0.12 tabm==0.0.3
+python kaggle/train.py --locked-holdout --data data --output submissions/locked-v1
+python kaggle/neural/train.py --locked-holdout --model both --data data --output submissions/locked-neural
+python kaggle/neural/compare.py --locked-baseline submissions/locked-v1 --locked-neural submissions/locked-neural
+```
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
