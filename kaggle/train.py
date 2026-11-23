@@ -151,7 +151,7 @@ def blend_probabilities(a, b, weight):
     )
 
 
-def fit_fold(raw, digits, target, rounds, *, experiment, compare_baseline):
+def fold_features(raw, digits, target):
     fit, valid, test = raw_views(*raw)
     key_views = []
     for frame, decimal in zip((fit, valid, test), digits, strict=True):
@@ -180,7 +180,23 @@ def fit_fold(raw, digits, target, rounds, *, experiment, compare_baseline):
         )
         tree_views.append(pd.concat([frame, decimal.filter(like="__fraction"), rates], axis=1))
 
-    del encoded
+    return (fit, valid, test), key_views, tree_views
+
+
+def predict_glm(key_views, target):
+    onehot = OneHotEncoder(
+        min_frequency=20, handle_unknown="infrequent_if_exist", dtype=np.float32,
+    )
+    matrix = onehot.fit_transform(key_views[0])
+    glm = LogisticRegression(C=0.1, max_iter=250, tol=1e-5, solver="lbfgs")
+    with threadpool_limits(limits=THREADS):
+        glm.fit(matrix, target)
+    del matrix
+    return [glm.predict_proba(onehot.transform(keys))[:, 1] for keys in key_views[1:]]
+
+
+def fit_fold(raw, digits, target, rounds, *, experiment, compare_baseline):
+    (fit, valid, test), key_views, tree_views = fold_features(raw, digits, target)
     baseline = None
     if experiment == "v1" or compare_baseline:
         baseline = predict_tree(tree_views, target, rounds)
@@ -204,15 +220,7 @@ def fit_fold(raw, digits, target, rounds, *, experiment, compare_baseline):
             specialist = predict_tree(tree_views, target, min(rounds, 900), masks)
     del tree_views
 
-    onehot = OneHotEncoder(
-        min_frequency=20, handle_unknown="infrequent_if_exist", dtype=np.float32,
-    )
-    matrix = onehot.fit_transform(key_views[0])
-    glm = LogisticRegression(C=0.1, max_iter=250, tol=1e-5, solver="lbfgs")
-    with threadpool_limits(limits=THREADS):
-        glm.fit(matrix, target)
-    del matrix
-    glm_predictions = [glm.predict_proba(onehot.transform(keys))[:, 1] for keys in key_views[1:]]
+    glm_predictions = predict_glm(key_views, target)
 
     results = []
     for j, glm_pred in enumerate(glm_predictions):

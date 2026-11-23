@@ -154,6 +154,38 @@ python kaggle/neural/train.py --locked-holdout --model both --data data --output
 python kaggle/neural/compare.py --locked-baseline submissions/locked-v1 --locked-neural submissions/locked-neural
 ```
 
+## V4 thử token GPT-2 và tín hiệu từ dữ liệu gốc
+
+Vòng thử dùng ba fold **chỉ trên 559.968 dòng development** trong split seed 8128. Mỗi fold chạy v1 đối chứng, v1 cộng tần suất token và v1 cộng cả tần suất lẫn target encoding của token. Token được tách từ cách viết số thập phân nhất quán. Tần suất chỉ học trên phần fit và target encoding của phần fit dùng cross-fitting nội bộ.
+
+Hai ứng viên bổ trợ là Transformer nhỏ học từ token mỗi trường, và GLM chỉ học trên bộ gốc 20.000 dòng. Kaggle dẫn tới bộ gốc ở trang Data và cho phép dữ liệu ngoài công khai theo thể lệ. Mã đối chiếu ID, nhãn và fold của cả ba đầu ra trước khi chấm các rank blend ở tỷ trọng cố định. [Bộ dữ liệu gốc CC0](https://www.kaggle.com/datasets/uditjain13/credit-card-fraud-detection-2026) · [Data cuộc thi](https://www.kaggle.com/competitions/playground-series-s6e11/data) · [Thể lệ](https://www.kaggle.com/competitions/playground-series-s6e11/rules).
+
+```bash
+python kaggle/tokens/bundle.py /tmp/s6e11-token-kaggle --model tree
+python kaggle/tokens/bundle.py /tmp/s6e11-transformer-kaggle --model transformer
+python kaggle/tokens/bundle.py /tmp/s6e11-transfer-kaggle --model transfer
+kaggle kernels push -p /tmp/s6e11-token-kaggle
+kaggle kernels push -p /tmp/s6e11-transformer-kaggle --accelerator NvidiaTeslaT4
+kaggle kernels push -p /tmp/s6e11-transfer-kaggle
+```
+
+Dùng `kaggle/tokens/compare.py --tree DIR --transformer DIR --transfer DIR` với các đầu ra Kaggle đã tải. Mã chọn ứng viên có AUC tổng cao hơn v1 và thắng ít nhất hai fold. Chỉ ứng viên đã chốt mới dùng holdout 20%.
+
+Stacking logistic học từ logit của v1, Transformer và GLM dữ liệu gốc. Để đo stacking trên development, mỗi fold OOF của mô hình gốc được chia đôi. Stacker học trên một nửa và dự đoán nửa còn lại, cùng dùng mô hình gốc đã huấn luyện ngoài cả hai nửa.
+
+| Ứng viên | Development OOF AUC | Chênh so với v1 | Số fold thắng v1 |
+| --- | ---: | ---: | ---: |
+| v1 | 0.948916 | | |
+| Tần suất token | 0.948859 | −0.000056 | 1/3 |
+| Tần suất và target encoding token | 0.948930 | +0.000014 | 2/3 |
+| Transformer | 0.938601 | −0.010315 | 0/3 |
+| GLM dữ liệu gốc | 0.924009 | −0.024907 | 0/3 |
+| Stacking logistic | 0.947991 | −0.000925 | 0/3 |
+| **v1 + 5% Transformer** | **0.948952** | **+0.000036** | **3/3** |
+
+Công thức v1 + 5% Transformer được chốt trước khi chấm holdout. [Token LightGBM](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-tokens-development) · [Transformer](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-token-transformer-development) · [GLM dữ liệu gốc](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-original-glm-development).
+
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
