@@ -94,6 +94,8 @@ Mỗi fold OOF của v1 được chia đôi có phân tầng. Hai LightGBM nông
 
 Ở seed 42, OOF AUC tăng từ **0.95057** lên **0.95064**. Số ca CVV bằng 0 bị bỏ sót ở top 5% giảm từ 2.607 xuống 2.601. AUC trong nhóm này tăng từ 0.93129 lên 0.93143 và AUC giữa các nhóm ở mức 0.97053. [Phiên hiệu chỉnh seed 42](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-residual).
 
+Trên seed 2026, hiệu chỉnh giảm OOF AUC từ **0.95049** xuống **0.95038** và bỏ sót thêm 4 ca CVV bằng 0 ở top 5%. AUC trong nhóm này giảm từ 0.93116 xuống 0.93097 và AUC giữa hai nhóm giảm từ 0.97051 xuống 0.97047. Mức tăng ở seed 42 không lặp lại, nên bài nộp vẫn dùng v1 với public AUC **0.95122**. [Phiên hiệu chỉnh seed 2026](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-residual-2026).
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
