@@ -1,0 +1,29 @@
+{
+  "frauds_rescued": 3,
+  "frauds_lost": 0,
+  "missed_fraud": 638,
+  "missed_cvv_zero": 532,
+  "auc_delta": 4.697126651065364e-05,
+  "bootstrap_ci_95": [
+    2.3411604650208642e-05,
+    7.545526768782671e-05
+  ],
+  "mean_flags": {
+    "is_new_merchant": {
+      "all_fraud": 0.4268605645851155,
+      "missed": 0.2507836990595611
+    },
+    "is_foreign_transaction": {
+      "all_fraud": 0.1330196749358426,
+      "missed": 0.04075235109717868
+    },
+    "used_vpn": {
+      "all_fraud": 0.13558597091531224,
+      "missed": 0.06896551724137931
+    },
+    "ip_country_mismatch": {
+      "all_fraud": 0.16894781864841746,
+      "missed": 0.03761755485893417
+    }
+  }
+}

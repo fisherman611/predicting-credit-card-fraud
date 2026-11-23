@@ -1,0 +1,10 @@
+{
+  "frontier_weight": 0.95,
+  "challenger_weight": 0.05,
+  "selected_challenger": "residual_025",
+  "rows": 299984,
+  "frontier_sha256": "5689d07cc601becb3b2530b87fa5c03241a79d54fb2aba10fe2773d6eaf0464c",
+  "candidate_sha256": "32ee81095b8c456d482ef45f1e62426071ff54efd04fca2b64ae44704a33679d",
+  "output_sha256": "52ec1113780c6245d9b28c63cc410db185d0e5b6719c3a257adde2ebb4fb3620",
+  "note": "The final blend with the public frontier has no independent OOF validation."
+}

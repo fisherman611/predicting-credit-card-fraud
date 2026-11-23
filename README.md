@@ -297,6 +297,29 @@ python kaggle/voting/export.py --frontier data/frontier_095567.csv --members out
 
 [Bundle OOF công khai và ghi công](https://www.kaggle.com/datasets/amanatar/s6e11-rank1-q17-meta-bundle) · [Frontier v43](https://www.kaggle.com/code/malyshevdanil/fraud-signal-lab-gpt-2-and-glm-fusion?scriptVersionId=372954959).
 
+## Thử nghiệm residual và tương tác
+
+[Phiên Kaggle residual và tương tác](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-residual-interactions) giữ riêng 20% train với seed 718231. Trên development 3 fold, mô hình dùng các đặc trưng tương tác CVV–merchant risk–velocity và mô hình residual từ OOF baseline. Residual có hai trọng số 25% và 50%. Phiên bản residual 25% được chọn vì có AUC development cao nhất trong các ứng viên mới.
+
+| Phiên bản | Development OOF AUC |
+| --- | ---: |
+| Baseline | **0.950054** |
+| Tương tác | 0.949779 |
+| Residual 25% | 0.949986 |
+| Residual 50% | 0.949914 |
+
+Trên holdout, baseline đạt 0.949606, residual 25% đạt 0.949653; số fraud bắt được ở top 5% là 1.697 và 1.700. Bootstrap phân tầng ghép cặp 300 lượt trên các dự đoán cố định cho khoảng chênh AUC 95% [0.0000234, 0.0000755]. Development và holdout cho kết quả trái chiều; meta-OOF có thể chia sẻ dòng train giữa các fold của mô hình gốc. Các vòng EDA trước cũng đã khám phá toàn bộ train.
+
+Phiên Kaggle lưu file test của từng phiên bản. Các mô hình test học trên development 80%, đồng nhất với tập dùng tạo OOF huấn luyện residual. Bài thử dự kiến ghép 95% thứ hạng của frontier 0.95567 với 5% residual được chọn. Phép ghép cuối chưa có holdout độc lập cho toàn bộ công thức và được nộp để đo public; checksum trong `kaggle/repair/export_metadata.json`.
+
+```bash
+python kaggle/repair/bundle.py /tmp/s6e11-repair-kernel
+kaggle kernels push -p /tmp/s6e11-repair-kernel
+kaggle kernels output huthnhlng/s6e11-fraud-residual-interactions -p outputs/repair-kaggle
+python kaggle/repair/export.py --frontier data/frontier_095567.csv --candidate outputs/repair-kaggle/submission.csv \
+  --metrics outputs/repair-kaggle/metrics.json --output outputs/repair/frontier_residual.csv
+```
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.

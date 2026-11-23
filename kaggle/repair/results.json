@@ -1,0 +1,141 @@
+{
+  "seed": 718231,
+  "development_rows": 559968,
+  "holdout_rows": 139992,
+  "selected_challenger": "residual_025",
+  "development": {
+    "baseline": {
+      "overall": {
+        "auc": 0.9500541142190698,
+        "cvv": {
+          "within_cvv_zero": 0.9309206142385662,
+          "within_cvv_other": 0.9315092479274201,
+          "cross_cvv_groups": 0.9700939086333659,
+          "directional_cross_auc": {
+            "cvv_zero_fraud_vs_cvv_other_legit": 0.741429095960674,
+            "cvv_other_fraud_vs_cvv_zero_legit": 0.9898813944250509
+          }
+        },
+        "top_5pct": {
+          "caught": 6788,
+          "false_alarms": 21210,
+          "missed_cvv_zero": 2096
+        }
+      },
+      "fold_auc": [
+        0.950607309172386,
+        0.9517767313907507,
+        0.9477983962144153
+      ]
+    },
+    "interactions": {
+      "overall": {
+        "auc": 0.9497794199941907,
+        "cvv": {
+          "within_cvv_zero": 0.930654296790563,
+          "within_cvv_other": 0.9306042502402302,
+          "cross_cvv_groups": 0.9698584637246458,
+          "directional_cross_auc": {
+            "cvv_zero_fraud_vs_cvv_other_legit": 0.7462043074632241,
+            "cvv_other_fraud_vs_cvv_zero_legit": 0.9892123528847102
+          }
+        },
+        "top_5pct": {
+          "caught": 6779,
+          "false_alarms": 21219,
+          "missed_cvv_zero": 2092
+        }
+      },
+      "fold_auc": [
+        0.950309508680439,
+        0.9513629860706283,
+        0.9477333348939241
+      ]
+    },
+    "residual_025": {
+      "overall": {
+        "auc": 0.9499859778248083,
+        "cvv": {
+          "within_cvv_zero": 0.9308144068863837,
+          "within_cvv_other": 0.9314474082269738,
+          "cross_cvv_groups": 0.97006239721608,
+          "directional_cross_auc": {
+            "cvv_zero_fraud_vs_cvv_other_legit": 0.741362487281446,
+            "cvv_other_fraud_vs_cvv_zero_legit": 0.9898529201456783
+          }
+        },
+        "top_5pct": {
+          "caught": 6787,
+          "false_alarms": 21211,
+          "missed_cvv_zero": 2096
+        }
+      },
+      "fold_auc": [
+        0.9505580250604263,
+        0.9517486606848112,
+        0.9477745119049341
+      ]
+    },
+    "residual_050": {
+      "overall": {
+        "auc": 0.9499137700118983,
+        "cvv": {
+          "within_cvv_zero": 0.9307029937480298,
+          "within_cvv_other": 0.9313771803429411,
+          "cross_cvv_groups": 0.9700282444878084,
+          "directional_cross_auc": {
+            "cvv_zero_fraud_vs_cvv_other_legit": 0.7412902753957485,
+            "cvv_other_fraud_vs_cvv_zero_legit": 0.9898220608626378
+          }
+        },
+        "top_5pct": {
+          "caught": 6783,
+          "false_alarms": 21215,
+          "missed_cvv_zero": 2099
+        }
+      },
+      "fold_auc": [
+        0.9504999626257054,
+        0.9517150786185241,
+        0.9477429033006937
+      ]
+    }
+  },
+  "holdout_baseline": {
+    "auc": 0.949605569998634,
+    "cvv": {
+      "within_cvv_zero": 0.9285422836627742,
+      "within_cvv_other": 0.9350087530120034,
+      "cross_cvv_groups": 0.9705422880838392,
+      "directional_cross_auc": {
+        "cvv_zero_fraud_vs_cvv_other_legit": 0.7394133663816405,
+        "cvv_other_fraud_vs_cvv_zero_legit": 0.9901668262986935
+      }
+    },
+    "top_5pct": {
+      "caught": 1697,
+      "false_alarms": 5302,
+      "missed_cvv_zero": 534
+    }
+  },
+  "holdout_challenger": {
+    "auc": 0.9496525412651446,
+    "cvv": {
+      "within_cvv_zero": 0.9286178208467877,
+      "within_cvv_other": 0.935053149682106,
+      "cross_cvv_groups": 0.9705625802888329,
+      "directional_cross_auc": {
+        "cvv_zero_fraud_vs_cvv_other_legit": 0.7395238246665766,
+        "cvv_other_fraud_vs_cvv_zero_legit": 0.9901794627431336
+      }
+    },
+    "top_5pct": {
+      "caught": 1700,
+      "false_alarms": 5299,
+      "missed_cvv_zero": 532
+    }
+  },
+  "rounds": 1500,
+  "limitation": "Prior EDA explored the full train. Meta OOF predictions share base-training rows across folds.",
+  "elapsed_seconds": 991.9
+}
