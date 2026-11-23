@@ -43,6 +43,18 @@ kaggle competitions submit -c playground-series-s6e11 -f submissions/submission.
 
 Mô hình sử dụng dữ liệu chính thức của cuộc thi. Ý tưởng cây nông và nhóm chữ số tham khảo [Scale-Aware Digit GLM](https://www.kaggle.com/code/denpugovkin/s6e11-scale-aware-digit-glm). Cách phối hợp nhiều nguồn tín hiệu tham khảo [Board Model + RealMLP](https://www.kaggle.com/code/goodpjw2008/s6e11-board-model-realmlp-lb-0-95560). Các dự đoán đều được tạo bởi mã huấn luyện trong repo.
 
+## Kết quả Kaggle
+
+Phiên bản 1 chạy trên CPU trong khoảng 9 phút 29 giây với 699.960 dòng train và 299.984 dòng test.
+
+| Ứng viên | ROC AUC out-of-fold, 5 fold | Public ROC AUC |
+| --- | ---: | ---: |
+| LightGBM | 0.95052 | |
+| Digit GLM | 0.94602 | |
+| **Ensemble 80/20** | **0.95057** | **0.95122** |
+
+Kaggle chấm xong ngày 23/11/2026. Bài nộp `58752634` dùng ensemble. [Phiên chạy Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-credit-card-fraud-cv) · [Danh sách bài nộp](https://www.kaggle.com/competitions/playground-series-s6e11/submissions).
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
