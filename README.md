@@ -279,6 +279,24 @@ python kaggle/coarse/bundle_full.py /tmp/s6e11-cvv-specialist-full
 kaggle kernels push -p /tmp/s6e11-cvv-specialist-full
 ```
 
+## Rank voting với CatBoost và GPT-2
+
+[Thử nghiệm Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-rank-voting-holdout) giữ riêng 20% train theo seed 24681357. Ba fold trên development huấn luyện lại LightGBM, Digit GLM và CatBoost. Baseline ghép logit 80/20 đạt **0.949209 OOF** và thắng các cấu hình rank voting 0.948359–0.949016 cùng logistic stacking 0.949180. Baseline được chọn trước khi chấm và đạt **0.953237 AUC holdout**, bắt 1.733 trong 2.338 fraud ở top 5%. Nhóm bị bỏ sót gồm 605 fraud, trong đó 510 có CVV bằng 0. Lượt full refit tạo dự đoán test của từng mô hình.
+
+Thử nghiệm riêng dùng OOF công khai cho CatBoost và GPT-2 target-first và OOF LightGBM/Digit GLM cũ, cùng fold seed 42. Trên phần development của split mới, rank vote trọng số 40/10/25/25 đạt **0.950551 OOF**, so với 0.949797 của rank vote LightGBM/Digit GLM. Các mô hình OOF công khai có thể đã học trên các dòng holdout mới, do đó phép này chỉ thăm dò. GPT-2 không được huấn luyện lại trong job holdout. Kết quả baseline ba mô hình có holdout tách trước khi fit và chọn công thức, nhưng dữ liệu train đã được EDA và xem xét ở các vòng trước; điểm meta OOF còn có thể chịu ảnh hưởng chồng lấn train giữa các fold của mô hình gốc.
+
+Bài 58784987 ghép **95% rank của frontier 0.95567 và 5% rank vote bốn mô hình**, đạt **0.95565 public AUC**. Hai thành phần LightGBM/Digit GLM dùng full refit của job mới; CatBoost/GPT-2 lấy từ bundle công khai của amanatar và tác giả upstream. Vote 40/10/25/25 được đo bằng các dự đoán OOF công khai; phần blend với frontier chưa được đánh giá trên holdout độc lập. Các điểm và trọng số chọn sau khi quan sát development cần được xem là thăm dò.
+
+```bash
+python kaggle/voting/bundle.py /tmp/s6e11-rank-voting
+kaggle kernels push -p /tmp/s6e11-rank-voting
+kaggle kernels output huthnhlng/s6e11-rank-voting-holdout -p outputs/rank-voting
+python kaggle/voting/explore.py --baseline-oof submissions/v1/oof.npz --public-bundle data/rank1_q17_streams.npz --output outputs/gpt-exploratory.json
+python kaggle/voting/export.py --frontier data/frontier_095567.csv --members outputs/rank-voting/test_members.npz --public-bundle data/rank1_q17_streams.npz --output submissions/voting_frontier.csv
+```
+
+[Bundle OOF công khai và ghi công](https://www.kaggle.com/datasets/amanatar/s6e11-rank1-q17-meta-bundle) · [Frontier v43](https://www.kaggle.com/code/malyshevdanil/fraud-signal-lab-gpt-2-and-glm-fusion?scriptVersionId=372954959).
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.

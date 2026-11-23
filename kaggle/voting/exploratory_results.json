@@ -1,0 +1,15 @@
+{
+  "note": "Exploratory public OOF; base models can have trained on the outer holdout.",
+  "rows": 559968,
+  "single_model_auc": {
+    "lightgbm": 0.94977995545673,
+    "glm": 0.9450362580553797,
+    "catboost": 0.9491551378731777,
+    "gpt2": 0.9495640193600126
+  },
+  "voting_auc": {
+    "tree_glm_rank": 0.949796735710704,
+    "tree_glm_cat_rank": 0.949878457646096,
+    "tree_glm_cat_gpt_rank": 0.950551433355365
+  }
+}
