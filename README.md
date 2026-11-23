@@ -197,6 +197,19 @@ python kaggle/tokens/export.py --development-report development.json --holdout-r
 
 [Token LightGBM](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-tokens-development) · [Transformer](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-token-transformer-development) · [GLM dữ liệu gốc](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-original-glm-development).
 
+## Tái lập Board Model + RealMLP v39
+
+Step Z của goodpjw2008 và các tác giả đóng góp đạt **0.95562 Public ROC AUC**. Bản tái lập dùng sáu bộ đầu vào công khai và trọng số đã công bố để dựng lại ensemble. Điểm 0.95562 đến từ bài nộp của tác giả, sau khi tinh chỉnh trên public leaderboard. Bản chạy này kiểm tra khả năng tái lập thứ hạng trên test. [Notebook gốc v39](https://www.kaggle.com/code/goodpjw2008/s6e11-board-model-realmlp-lb-0-95562?scriptVersionId=372884035).
+
+```bash
+curl --fail --location https://www.kaggle.com/kernels/scriptcontent/372884035/download -o /tmp/s6e11-board-v39.ipynb
+python kaggle/board/bundle.py /tmp/s6e11-board-replay --notebook /tmp/s6e11-board-v39.ipynb
+kaggle kernels push -p /tmp/s6e11-board-replay
+kaggle kernels output huthnhlng/s6e11-board-model-v39-replay -p submissions/board-v39
+```
+
+Script kiểm tra checksum của notebook gốc khi đóng gói và dùng các kiểm tra checksum đầu vào của tác giả khi chạy. `replay.json` ghi checksum của CSV và thứ hạng trên 299.984 giao dịch. Phiên chạy báo lỗi nếu danh sách ID, miền xác suất hoặc thứ hạng sai. Lượt chạy đối chiếu tạo CSV trùng từng byte với đầu ra v39 của tác giả. [Phiên tái lập trên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-board-model-v39-replay).
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
