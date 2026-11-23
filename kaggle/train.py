@@ -338,6 +338,10 @@ def run(data_dir, output_dir, rounds, *, experiment="v1", seed=SEED,
                 )
     no_cvv_retry = train["cvv_retry_count"].eq(0).to_numpy() if "cvv_retry_count" in train else np.zeros(len(train), dtype=bool)
     if save_oof:
+        if experiment == "v1" and selected != "blend_80_20":
+            sample.assign(**{TARGET: predictions[:, members.index("blend_80_20")]}).to_csv(
+                output_dir / "submission_blend_80_20.csv", index=False,
+            )
         np.savez_compressed(
             output_dir / "oof.npz",
             id=train_ids.to_numpy(), fold=fold_ids, is_fraud=target,
@@ -362,17 +366,108 @@ def run(data_dir, output_dir, rounds, *, experiment="v1", seed=SEED,
     print(json.dumps(metrics, indent=2), flush=True)
 
 
+def run_residual(data_dir, control_dir, output_dir, seed):
+    """Fit each correction on rows the corresponding v1 model never trained on."""
+    start = time.monotonic()
+    if control_dir is None:
+        files = list(Path("/kaggle/input").rglob("oof.npz"))
+        if len(files) != 1:
+            raise ValueError("Attach one private baseline run, or set --control.")
+        control_dir = files[0].parent
+    metrics = json.loads((control_dir / "metrics.json").read_text())
+    if metrics["experiment"] != "v1":
+        raise ValueError("Expected the v1 control artifacts.")
+    if metrics["split_seed"] != seed:
+        raise ValueError("The control run must use the requested seed.")
+
+    train = pd.read_csv(data_dir / "train.csv")
+    test = pd.read_csv(data_dir / "test.csv")
+    control_file = "submission.csv" if metrics["selected"] == "blend_80_20" else "submission_blend_80_20.csv"
+    baseline_test = pd.read_csv(control_dir / control_file)
+    with np.load(control_dir / "oof.npz", allow_pickle=False) as artifact:
+        if not np.array_equal(train["id"], artifact["id"]) or not test["id"].equals(baseline_test["id"]):
+            raise ValueError("Control predictions do not match competition IDs.")
+        if not np.array_equal(train[TARGET], artifact[TARGET]):
+            raise ValueError("Control OOF labels do not match the training data.")
+        folds = artifact["fold"]
+        baseline = artifact["blend_80_20"]
+    if not np.array_equal(np.unique(folds), np.arange(1, FOLDS + 1)):
+        raise ValueError("Expected five completed control folds.")
+    if not np.isfinite(baseline).all() or not baseline_test[TARGET].between(0, 1).all():
+        raise ValueError("Control predictions contain invalid scores.")
+
+    target = train.pop(TARGET).to_numpy()
+    cvv_zero = train["cvv_retry_count"].eq(0).to_numpy()
+    train_ids = train.pop("id")
+    test.pop("id")
+    train["baseline_logit"] = logit(np.clip(baseline, 1e-9, 1 - 1e-9))
+    baseline_logit = logit(np.clip(baseline_test[TARGET].to_numpy(), 1e-9, 1 - 1e-9))
+    test["baseline_logit"] = baseline_logit
+    test = test[train.columns]
+
+    corrected_oof = np.full(len(train), np.nan)
+    test_correction = np.zeros(len(test))
+    weight = 0.5
+    fold_scores = []
+    for fold in np.unique(folds):
+        rows = np.flatnonzero(folds == fold)
+        halves = StratifiedKFold(n_splits=2, shuffle=True, random_state=seed + int(fold))
+        for learn_idx, check_idx in halves.split(rows, target[rows]):
+            learn, check = rows[learn_idx], rows[check_idx]
+            fit, valid, infer = raw_views(train.iloc[learn], train.iloc[check], test)
+            booster = lgb.LGBMClassifier(
+                n_estimators=100, learning_rate=0.03, num_leaves=4, min_child_samples=200,
+                reg_lambda=20, n_jobs=THREADS, deterministic=True, force_col_wise=True,
+                boost_from_average=False, verbosity=-1, random_state=SEED,
+            )
+            booster.fit(fit, target[learn], init_score=fit["baseline_logit"].to_numpy())
+            corrected_oof[check] = expit(
+                valid["baseline_logit"].to_numpy() + weight * booster.predict(valid, raw_score=True)
+            )
+            test_correction += booster.predict(infer, raw_score=True) / (2 * FOLDS)
+        scores = {
+            "baseline": roc_auc_score(target[rows], baseline[rows]),
+            "residual": roc_auc_score(target[rows], corrected_oof[rows]),
+        }
+        fold_scores.append(scores)
+        print(f"Fold {fold}/{FOLDS}: {scores}", flush=True)
+    if not np.isfinite(corrected_oof).all() or not np.isfinite(test_correction).all():
+        raise ValueError("Residual scores are incomplete.")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    submission = baseline_test.assign(**{TARGET: expit(baseline_logit + weight * test_correction)})
+    submission.to_csv(output_dir / "submission.csv", index=False)
+    np.savez_compressed(output_dir / "oof.npz", id=train_ids.to_numpy(), fold=folds,
+                        is_fraud=target, cvv_zero=cvv_zero, baseline=baseline, residual=corrected_oof)
+    members = {"baseline": baseline, "residual": corrected_oof}
+    report = {
+        "experiment": "residual",
+        "split_seed": seed,
+        "oof_auc": {name: roc_auc_score(target, pred) for name, pred in members.items()},
+        "cvv_auc": {name: cvv_auc_summary(target, pred, cvv_zero) for name, pred in members.items()},
+        "top_5pct": {name: top5_summary(target, pred, cvv_zero) for name, pred in members.items()},
+        "fold_scores": fold_scores,
+        "elapsed_seconds": round(time.monotonic() - start, 1),
+    }
+    (output_dir / "metrics.json").write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps(report, indent=2), flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=competition_data())
     destination = Path("/kaggle/working") if Path("/kaggle/working").is_dir() else Path("submissions")
     parser.add_argument("--output", type=Path, default=destination)
     parser.add_argument("--rounds", type=int, default=1500)
-    parser.add_argument("--experiment", choices=("v1", "v2", "v3"), default="v3")
+    parser.add_argument("--experiment", choices=("v1", "v2", "v3", "residual"), default="v3")
     parser.add_argument("--seed", type=int, default=SEED)
     parser.add_argument("--compare-baseline", action="store_true")
     parser.add_argument("--save-oof", action="store_true")
+    parser.add_argument("--control", type=Path)
     args = parser.parse_args()
-    run(args.data, args.output, args.rounds, experiment=args.experiment,
-        seed=args.seed, compare_baseline=args.compare_baseline,
-        save_oof=args.save_oof or args.experiment == "v3")
+    if args.experiment == "residual":
+        run_residual(args.data, args.control, args.output, args.seed)
+    else:
+        run(args.data, args.output, args.rounds, experiment=args.experiment,
+            seed=args.seed, compare_baseline=args.compare_baseline,
+            save_oof=args.save_oof or args.experiment == "v3")

@@ -88,6 +88,12 @@ LightGBM được bổ sung target encoding của cụm 2–3 chữ số và ph�
 
 AUC giữa các nhóm tính trên các cặp gian lận và hợp lệ thuộc hai nhóm CVV khác nhau. Hai phiên chạy khớp ID, nhãn và fold trên cả 699.960 dòng, nên có thể so sánh trực tiếp. V3 giảm AUC tổng và bỏ sót thêm 28 ca ở nhóm mục tiêu. [Phiên v1 đối chứng](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-control) · [Phiên thử cụm chữ số](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-positional-digits).
 
+## Hiệu chỉnh phần sai số của v1
+
+Mỗi fold OOF của v1 được chia đôi có phân tầng. Hai LightGBM nông học phần hiệu chỉnh logit từ một nửa và dự đoán nửa còn lại. Mô hình v1 của fold đã học ở ngoài cả hai nửa. Hệ số hiệu chỉnh cố định là 0,5. Với tập test, mã cộng phần hiệu chỉnh trung bình của các cây vào logit của dự đoán v1.
+
+Ở seed 42, OOF AUC tăng từ **0.95057** lên **0.95064**. Số ca CVV bằng 0 bị bỏ sót ở top 5% giảm từ 2.607 xuống 2.601. AUC trong nhóm này tăng từ 0.93129 lên 0.93143 và AUC giữa các nhóm ở mức 0.97053. [Phiên hiệu chỉnh seed 42](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-v3-residual).
+
 ## Chạy trên Kaggle
 
 Từ thư mục gốc, dùng Kaggle CLI để chạy mã trên CPU với dữ liệu cuộc thi tự động gắn vào. Trong `kaggle/kernel-metadata.json`, đổi phần tài khoản của `id` nếu chạy bằng tài khoản khác.
@@ -107,4 +113,5 @@ python -m pip install -r requirements.txt
 python kaggle/train.py --data data --output submissions
 python kaggle/train.py --experiment v3 --compare-baseline --data data --output submissions/v3-comparison
 python kaggle/train.py --experiment v1 --save-oof --data data --output submissions/v1
+python kaggle/train.py --experiment residual --control submissions/v1 --data data --output submissions/residual
 ```
