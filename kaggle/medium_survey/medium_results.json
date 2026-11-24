@@ -1,0 +1,59 @@
+{
+  "rows": 139992,
+  "frauds": 2337,
+  "fold": 0,
+  "auc": {
+    "medium": 0.9479900768336038,
+    "small": 0.948505568399054,
+    "wide_nested": 0.9517736034193499
+  },
+  "spearman_vs_wide": {
+    "medium": 0.9690766489717239,
+    "small": 0.9814819399196393
+  },
+  "blend_vs_wide": {
+    "0.05": {
+      "auc": 0.9517702944330992,
+      "delta_auc": -3.308986250671886e-06,
+      "sample_pairs": 2337000,
+      "corrected": 1024,
+      "broken": 996
+    },
+    "0.1": {
+      "auc": 0.9517392825953059,
+      "delta_auc": -3.4320824043976295e-05,
+      "sample_pairs": 2337000,
+      "corrected": 1988,
+      "broken": 2080,
+      "bootstrap_ci_95": [
+        -0.00013989543696699136,
+        6.670704127248457e-05
+      ]
+    },
+    "0.2": {
+      "auc": 0.9516242933802852,
+      "delta_auc": -0.00014931003906470952,
+      "sample_pairs": 2337000,
+      "corrected": 3862,
+      "broken": 4195
+    },
+    "0.3": {
+      "auc": 0.951436203390096,
+      "delta_auc": -0.0003374000292538648,
+      "sample_pairs": 2337000,
+      "corrected": 5583,
+      "broken": 6319
+    }
+  },
+  "input_sha256": {
+    "bundle": "0fe4ab1263a673c8065d7145590b92da440263161bf860ce45f2976b5c4fa56f",
+    "medium": "6331e3fbd88e0adb76968d2b03741bd9f54a7883d12d66cc17d3961bd31919e9",
+    "small": "181ceac8f3a48fcf9a1702e1222ee13178f0688a28c1aff22c8f881532ea981a",
+    "wide": "69375871698f1adf2b4c666fc7f5180edf00ac6836668353b8e7e4ca43eb2722"
+  },
+  "limitations": [
+    "Only fold 0 medium OOF is available; weights are exploratory.",
+    "Wide-stack nested OOF can share base-model training rows across meta folds.",
+    "Step AB lacks matched OOF; this does not evaluate a blend with Step AB."
+  ]
+}

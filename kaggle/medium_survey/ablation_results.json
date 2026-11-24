@@ -1,0 +1,62 @@
+{
+  "folds": [
+    {
+      "fold": 0,
+      "frauds": 2337,
+      "rows": 139992
+    },
+    {
+      "fold": 1,
+      "frauds": 2338,
+      "rows": 139992
+    },
+    {
+      "fold": 2,
+      "frauds": 2338,
+      "rows": 139992
+    }
+  ],
+  "rounds": 350,
+  "fold_auc": {
+    "raw": [
+      0.9423139282349735,
+      0.9454615216990101,
+      0.9493346361787839
+    ],
+    "exact": [
+      0.9435662202208528,
+      0.9472434438247578,
+      0.951062533735449
+    ],
+    "digit": [
+      0.9452644047095656,
+      0.9484276280757635,
+      0.9521725076111349
+    ],
+    "token": [
+      0.9451842072546314,
+      0.9484054086190712,
+      0.9522839404702256
+    ],
+    "count": [
+      0.945274490201243,
+      0.9484928384991452,
+      0.9523133188736695
+    ]
+  },
+  "mean_auc": {
+    "raw": 0.9457033620375892,
+    "exact": 0.9472907325936865,
+    "digit": 0.9486215134654881,
+    "token": 0.9486245187813095,
+    "count": 0.9486935491913525
+  },
+  "limitations": [
+    "Fold 3 and 4 were not evaluated.",
+    "Model hyperparameters were fixed, no early stopping.",
+    "Screening is exploratory; no independent final holdout or Step AB OOF.",
+    "Counts fitted on the outer train partition; token encoding reads the original CSV strings.",
+    "Inner-fold encoded train features can share data with other inner folds; no outer labels enter encoding."
+  ],
+  "seconds": 283.3
+}
