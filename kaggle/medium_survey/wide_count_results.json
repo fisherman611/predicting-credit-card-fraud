@@ -1,0 +1,63 @@
+{
+  "folds": [
+    {
+      "fold": 0,
+      "frauds": 2337,
+      "rows": 139992
+    },
+    {
+      "fold": 1,
+      "frauds": 2338,
+      "rows": 139992
+    },
+    {
+      "fold": 2,
+      "frauds": 2338,
+      "rows": 139992
+    }
+  ],
+  "rounds": 350,
+  "fold_auc": {
+    "count": [
+      0.945274490201243,
+      0.9484928384991452,
+      0.9523133188736695
+    ]
+  },
+  "mean_auc": {
+    "count": 0.9486935491913525
+  },
+  "limitations": [
+    "Fold 3 and 4 were not evaluated.",
+    "Model hyperparameters were fixed, no early stopping.",
+    "Screening is exploratory; no independent final holdout or Step AB OOF.",
+    "Counts fitted on the outer train partition; token encoding reads the original CSV strings.",
+    "Inner-fold encoded train features can share data with other inner folds; no outer labels enter encoding.",
+    "Count variant was selected on these same folds, so this blend comparison is exploratory."
+  ],
+  "seconds": 111.0,
+  "wide_fold_auc": [
+    0.9517736034193499,
+    0.9525308138281967,
+    0.9573724120019098
+  ],
+  "wide_blend_fold_auc": {
+    "count": {
+      "0.05": [
+        0.9517153891966992,
+        0.9525959621079434,
+        0.9573427322018361
+      ],
+      "0.1": [
+        0.9516288271110949,
+        0.9526293596509805,
+        0.9572858024178174
+      ],
+      "0.2": [
+        0.9513662328630765,
+        0.9526160329484559,
+        0.9571040260710943
+      ]
+    }
+  }
+}
