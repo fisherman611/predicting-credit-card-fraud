@@ -1,0 +1,9 @@
+{
+  "rows": 299984,
+  "step_ab_weight": 0.95,
+  "count_weight": 0.05,
+  "model_rounds": 350,
+  "sha256": "16133e7ff219ab6442b745fa5646c5b8148f05e23294ba3ca0c8dc41d3d8e79c",
+  "elapsed_seconds": 114.9,
+  "caveat": "Exploratory rank blend. Existing three-fold wide-stack tests were inconsistent; Step AB lacks matched OOF."
+}
