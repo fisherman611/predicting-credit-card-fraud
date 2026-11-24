@@ -431,3 +431,27 @@ kaggle kernels push -p /tmp/s6e11-v5
 | Đối chứng: Step AB | 58815003 | 0.95569 |
 
 Stack thuần hơn wide LM stack 0.00013 trên public, cùng chiều với CV. Blend vào Step AB giảm 0.00010 so với Step AB. Khoảng cách 0.003 giữa stack có CV và Step AB chưa có giải thích bằng OOF; nó có thể là tín hiệu thật trong các thành phần không công bố OOF hoặc là overfit public leaderboard. Khi chọn hai bài cuối, một phương án phòng thủ là Step AB cùng `stack.csv`.
+
+## V6: Phân tích lỗi và mô hình nền có cổng kiểm định
+
+**Phân tích lỗi stack v5** (OOF 0.95262):
+- 83% số ca fraud bị lọt khỏi top 5% nằm ở nhóm CVV bằng 0 (2.530/3.053); AUC trong nhóm này là 0.9343.
+- Trên test, Step AB khác stack chủ yếu ở việc đẩy nhóm CVV > 0 xuống (trung bình −1,38 điểm phần trăm thứ hạng). Làm điều tương tự trên OOF thì giảm AUC: dịch logit −0,15 cho −0.00006 và −0,30 cho −0.00029. Logistic hiệu chỉnh độ lệch theo nhóm cho −0.00013 (giảm ở 4/5 fold); hiệu chỉnh cả độ dốc cho −0.00055 (giảm ở 5/5 fold).
+- Tỷ lệ CVV > 0 ở train và test bằng nhau (8,27%). Lợi thế public của Step AB không được train xác nhận.
+
+**Mô hình nền v6** (`kaggle/v6/base.py`, cùng fold seed 2027 với stack): B1 GLM boost với target encoding ở smoothing 5/20/100, joint key và count; B2 như B1 nhưng nhân trọng số 3 cho nhóm CVV bằng 0; B3 là B1 cộng aggregate không dùng nhãn theo tổ hợp categorical. [Phiên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-v6-base-members) chạy 2.737 giây và khớp bản local đến 4 chữ số thập phân.
+
+| Thành phần | OOF AUC | AUC nhóm CVV = 0 |
+| --- | ---: | ---: |
+| B1 glmboost | 0.947282 | 0.926144 |
+| B2 trọng số CVV = 0 | 0.946970 | 0.925741 |
+| B3 aggregate | 0.947467 | 0.926431 |
+
+**Stack có cổng** (`kaggle/v6/stack_v6.py`): một thành phần chỉ được giữ nếu stack lồng tăng ở ít nhất 4/5 fold và AUC nhóm CVV bằng 0 không giảm. Trên [phiên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-v6-gated-stack), B3 cho +0.0000035 (thắng 3/5 fold), B2 +0.0000021 (3/5), B1 −0.0000007 (2/5); cổng loại cả ba. Chạy local với tập thành phần nền khác một chút, B3 được chọn với +0.0000066 (4/5 fold); ở lần chạy khác lại cho −0.0000035. Mức thay đổi nằm dưới nhiễu.
+
+`stack_v6.csv` vì thế trùng stack v5 và không được nộp. Thêm mô hình nền kiểu GBDT với target encoding không còn đem lại tín hiệu mới so với 79 thành phần công khai.
+
+```bash
+python kaggle/v6/bundle.py base /tmp/s6e11-v6-base && kaggle kernels push -p /tmp/s6e11-v6-base
+python kaggle/v6/bundle.py stack /tmp/s6e11-v6-stack && kaggle kernels push -p /tmp/s6e11-v6-stack
+```
