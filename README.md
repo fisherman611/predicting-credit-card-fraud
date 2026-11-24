@@ -481,7 +481,7 @@ Thêm vào stack v5, mô hình chữ số cho +0.0000042 (thắng 3/5 fold), n�
 | + dữ liệu gốc | +0.000005 | −0.000814 | −0.000190 | −0.000333 (thắng 1/3) |
 | + nhãn mềm trên test | −0.000272 | −0.000039 | −0.000169 | −0.000160 (thắng 0/3) |
 
-Cả hai đều không được dùng. Ngưỡng phân loại không ảnh hưởng tới ROC AUC: AUC chỉ phụ thuộc thứ tự xếp hạng, nên đổi ngưỡng hay biến đổi đơn điệu xác suất đều cho cùng điểm.
+[Phiên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-v8-augment-test) cho cùng kết quả (−0.000333 và −0.000160). Cả hai đều không được dùng. Ngưỡng phân loại không ảnh hưởng tới ROC AUC: AUC chỉ phụ thuộc thứ tự xếp hạng, nên đổi ngưỡng hay biến đổi đơn điệu xác suất đều cho cùng điểm.
 
 **Trung bình hai stack độc lập** (`kaggle/v8/stack_mean.py`): rank mean của wide LM stack của goodpjw2008 và `stack_all` của [DavutKursun](https://www.kaggle.com/code/davutkursun/s6e11-the-0-9526-wall-who-still-adds-signal), rồi đẩy vùng không gian lận xuống cuối. Không có trọng số nào được fit.
 
