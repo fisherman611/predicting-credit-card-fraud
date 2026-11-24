@@ -397,6 +397,8 @@ So sánh thêm model `count` được chọn sau ablation với wide stack trên
 
 [Phiên ablation trên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-encoding-ablation-audit) hoàn tất sau 438,6 giây, với AUC từng fold khớp chạy local trong sai số số học (chênh tối đa 1.2e-16). Không nộp bài vì cả thử GPT-2 medium fold 0 và blend count với wide không cho thấy cải thiện ổn định; điểm 0.95569 giữ làm đối chứng.
 
+Theo yêu cầu thử public, [phiên full-refit count](https://www.kaggle.com/code/huthnhlng/s6e11-count-step-ab-blend) huấn luyện count model trên toàn train với 350 cây và inner target encoding 3 fold, sau đó ghép 95% rank Step AB với 5% rank count. Local và Kaggle khớp checksum `16133e7ff219ab6442b745fa5646c5b8148f05e23294ba3ca0c8dc41d3d8e79c`. Submission **58830735 đạt 0.95567**, thấp hơn Step AB 0.95569 là 0.00002. Kết quả cho một trọng số và một lần full refit; không có OOF tương ứng của cả blend với Step AB để đánh giá private.
+
 ## V5: Mega stack trên OOF công khai
 
 Chiến lược và giới hạn ghi ở `kaggle/mega_stack/STRATEGY.md`. Trước khi chọn hướng, repo kiểm tra rò rỉ: thứ tự `id` (AUC 0.4985), dòng trùng giữa train và test, và [bộ dữ liệu gốc 20.000 dòng](https://www.kaggle.com/datasets/uditjain13/credit-card-fraud-detection-2026). Không dòng tổng hợp nào trùng dòng gốc, số cột trùng chỉ ở mức ngẫu nhiên và nhãn gốc chỉ tách được ở AUC 0.9435 bằng logistic. Không tìm thấy rò rỉ.
