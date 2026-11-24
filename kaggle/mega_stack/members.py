@@ -86,10 +86,16 @@ def _csv_pairs(root, out):
             a, b = pd.read_csv(path), pd.read_csv(twin)
         except Exception:
             continue
-        if not {'id', 'is_fraud'} <= set(a.columns) or not {'id', 'is_fraud'} <= set(b.columns):
+        if 'id' not in a.columns or 'id' not in b.columns:
             continue
-        _add(out, path.parent.name + ':' + path.stem,
-             a.sort_values('id').is_fraud.to_numpy(), b.sort_values('id').is_fraud.to_numpy())
+        a, b = a.sort_values('id'), b.sort_values('id')
+        if {'is_fraud'} <= set(a.columns) & set(b.columns) and len(set(a.columns) & set(b.columns)) == 2:
+            _add(out, path.parent.name + ':' + path.stem, a.is_fraud.to_numpy(), b.is_fraud.to_numpy())
+            continue
+        # Multi-column banks (e.g. oof_predictions.csv / test_predictions.csv): pair columns by name.
+        for col in sorted(set(a.columns) & set(b.columns) - {'id', 'is_fraud', 'fold'}):
+            if pd.api.types.is_numeric_dtype(a[col]) and pd.api.types.is_numeric_dtype(b[col]):
+                _add(out, path.parent.name + ':' + path.stem + ':' + col, a[col].to_numpy(), b[col].to_numpy())
 
 
 def logit_rank(v):

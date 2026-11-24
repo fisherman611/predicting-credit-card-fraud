@@ -465,3 +465,31 @@ python kaggle/v6/bundle.py stack /tmp/s6e11-v6-stack && kaggle kernels push -p /
 | v7 digit Transformer | 0.944591 | 0.922433 |
 
 Thêm vào stack v5, mô hình chữ số cho +0.0000042 (thắng 3/5 fold), nằm trong nhiễu như các thành phần v6; cổng không chọn. Stack ép thêm cả bốn thành phần v6/v7 đạt CV 0.952566, so với 0.952558 của stack v5. Bài này (58847113) đạt **0.95307** public, cao hơn `stack.csv` v5 (0.95298) 0.00009, chênh lệch nhỏ so với nhiễu public.
+
+## V8: Augment dữ liệu, nhãn mềm và trung bình stack độc lập
+
+**Khảo sát.** Các notebook công khai đã thử những hướng này:
+- [Distillation adds no clear tree gain](https://www.kaggle.com/code/masayakawamata/s6e11-distillation-adds-no-clear-tree-gain): nhãn mềm thêm khoảng +0.0002 CV, trong vùng nhiễu; nhãn cứng từ mô hình thầy làm giảm điểm.
+- [What Worked & What Didn't](https://www.kaggle.com/code/davutkursun/s6e11-what-worked-what-didn-t-lb-0-9526): thêm bộ dữ liệu gốc làm CV giảm 0.0003.
+- [MathsOnChain progress report](https://www.kaggle.com/code/mathsonchain/s6e11-fraud-what-worked-what-didn-t): các bước public ladder tới Step AB giảm khi chấm lại trên dữ liệu có nhãn (0/5 fold); trung bình nhiều stack độc lập cho CV tốt nhất.
+
+**Augment và nhãn mềm** (`kaggle/v8/augment.py`, fold 0–2, seed 2027). Mô hình cơ sở là LightGBM 4 lá trên cột gốc, count và target encoding trong fold. "orig" thêm 20.000 dòng có nhãn của bộ dữ liệu gốc vào tập fit (kể cả bộ mã hóa). "pseudo" là chưng cất: mô hình cơ sở của chính fold đó, không thấy fold đang chấm, dự đoán 299.984 dòng test; mô hình học trò train trên dữ liệu thật cộng các dòng test với xác suất của mô hình thầy làm nhãn mềm (`objective=cross_entropy`).
+
+| | Fold 0 | Fold 1 | Fold 2 | Trung bình so với cơ sở |
+| --- | ---: | ---: | ---: | ---: |
+| Cơ sở | 0.952634 | 0.950824 | 0.949613 | |
+| + dữ liệu gốc | +0.000005 | −0.000814 | −0.000190 | −0.000333 (thắng 1/3) |
+| + nhãn mềm trên test | −0.000272 | −0.000039 | −0.000169 | −0.000160 (thắng 0/3) |
+
+Cả hai đều không được dùng. Ngưỡng phân loại không ảnh hưởng tới ROC AUC: AUC chỉ phụ thuộc thứ tự xếp hạng, nên đổi ngưỡng hay biến đổi đơn điệu xác suất đều cho cùng điểm.
+
+**Trung bình hai stack độc lập** (`kaggle/v8/stack_mean.py`): rank mean của wide LM stack của goodpjw2008 và `stack_all` của [DavutKursun](https://www.kaggle.com/code/davutkursun/s6e11-the-0-9526-wall-who-still-adds-signal), rồi đẩy vùng không gian lận xuống cuối. Không có trọng số nào được fit.
+
+| | CV AUC |
+| --- | ---: |
+| Wide LM stack | 0.952565 |
+| Davut `stack_all` | 0.952611 |
+| Trung bình rank | 0.952669 |
+| Trung bình + vùng | **0.952723** (cao hơn wide + vùng ở 5/5 fold) |
+
+[Phiên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-v8-stack-mean) cho file giống hệt bản local. Bài 58847974 đạt **0.95347** public, bài có CV tốt nhất của repo, cao hơn v7 stack (0.95307).
