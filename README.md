@@ -394,3 +394,5 @@ Trên 299.984 dòng test không nhãn, clipped đổi 142 dòng và Step AB đ�
 Tokenizer lấy từ GPT-2 `tokenizer.json`, checksum `8414cab924d8b9b33013f0d221c5862f365ee9be39c5c2bfae8a5a9e970478a6`; bundle kiểm tra checksum và nhúng asset vào phiên Kaggle. Kết quả là thăm dò, không được xem như xác nhận blend với Step AB 0.95569.
 
 So sánh thêm model `count` được chọn sau ablation với wide stack trên cùng ba fold bằng `encoding_ablation.py --variants count --wide ...`. Với blend rank 5%, chênh AUC từng fold lần lượt **−0.000058, +0.000065, −0.000030**; trọng số 10% cho **−0.000145, +0.000099, −0.000087**. Biến thể `count` đã được chọn từ chính các fold này nên kết quả chỉ để thăm dò; wide stack còn có thể chia sẻ dòng train ở tầng meta. Chưa có tín hiệu ổn định để nộp blend với Step AB.
+
+[Phiên ablation trên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-encoding-ablation-audit) hoàn tất sau 438,6 giây, với AUC từng fold khớp chạy local trong sai số số học (chênh tối đa 1.2e-16). Không nộp bài vì cả thử GPT-2 medium fold 0 và blend count với wide không cho thấy cải thiện ổn định; điểm 0.95569 giữ làm đối chứng.
