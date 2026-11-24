@@ -358,3 +358,15 @@ Thử nghiệm `kaggle/pairwise_repair/evaluate.py` dùng dự đoán baseline O
 Hai seed chỉ thay đổi các meta fold trên cùng một bộ dự đoán baseline OOF; chúng không phải hai lần huấn luyện baseline độc lập. Meta fold không lồng hoàn toàn trong vòng tạo dự đoán baseline; holdout cũng từng được xem trước đây. Chưa có dự đoán holdout tương ứng cho toàn bộ blend frontier public 0.95568. Kết quả này chỉ sàng lọc heuristic trên baseline residual, không kết luận trực tiếp về blend frontier. Chi tiết: `kaggle/pairwise_repair/results.json`. Thử nghiệm chạy trên máy vì token Kaggle đã được xóa sau lần nộp trước.
 
 Để chạy lại, truyền `--train`, `--development`, `--holdout` và `--output` cho script; hai file NPZ là `development_versions.npz` và `holdout.npz` trong output của [phiên Kaggle residual và tương tác](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-residual-interactions/output).
+
+## Tái lập clipped correction và Step AB
+
+[Kết quả clipped correction của Areeb Ali](https://www.kaggle.com/code/areebbb/s6e11-which-signals-rank-fraud-lb-0-95568?scriptVersionId=373269898) đạt 0.95568 public. `kaggle/clipped_replay/replay.py` tái lập công thức từ hai kho rank công khai của Malyshev Danil, Step AA của goodpjw2008 và bốn vùng rủi ro thấp được ghi công trong notebook nguồn. Script kiểm tra checksum v43, quarter-step, Step AA và file clipped. Mã đồng thời xác minh và lưu bản [Step AB của goodpjw2008](https://www.kaggle.com/code/goodpjw2008/s6e11-board-model-realmlp-lb-0-95569), tác giả công bố 0.95569 public, dựa trên Sriram S orthogonal continuation; nguồn không phải mô hình do repo này tự train.
+
+Script dựng lại bài của repo 0.95568 từ v43 và residual 25%, kiểm tra checksum rồi so sánh thứ hạng trên test không nhãn. Các điểm công khai và công thức được chọn qua public leaderboard; so sánh thứ hạng không đo được AUC hay khả năng tổng quát hóa. Chưa có holdout khớp độc lập cho toàn bộ các ensemble.
+
+```bash
+python kaggle/clipped_replay/bundle.py /tmp/s6e11-clipped-kernel
+kaggle kernels push -p /tmp/s6e11-clipped-kernel
+kaggle kernels output huthnhlng/s6e11-clipped-step-ab-replay -p outputs/clipped-replay
+```
