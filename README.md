@@ -455,3 +455,13 @@ Stack thuần hơn wide LM stack 0.00013 trên public, cùng chiều với CV. B
 python kaggle/v6/bundle.py base /tmp/s6e11-v6-base && kaggle kernels push -p /tmp/s6e11-v6-base
 python kaggle/v6/bundle.py stack /tmp/s6e11-v6-stack && kaggle kernels push -p /tmp/s6e11-v6-stack
 ```
+
+## V7: Transformer đọc từng chữ số
+
+`kaggle/v7/digits.py` mã hóa mỗi giá trị số thành chuỗi chữ số độ dài cố định (hai chữ số thập phân, ký hiệu riêng cho số 0 ở đầu), mỗi ký tự là một token có embedding theo cột và vị trí; cột nguyên, boolean và categorical là một token. Không dùng target encoding. Transformer 3 lớp, rộng 64, 10 epoch, early stopping theo AUC trên 5% tập fit, cùng fold seed 2027. [Phiên GPU](https://www.kaggle.com/code/huthnhlng/s6e11-v7-digit-transformer) chờ khoảng 3 giờ trong hàng đợi rồi chạy 918 giây.
+
+| | OOF AUC | AUC nhóm CVV = 0 |
+| --- | ---: | ---: |
+| v7 digit Transformer | 0.944591 | 0.922433 |
+
+Thêm vào stack v5, mô hình chữ số cho +0.0000042 (thắng 3/5 fold), nằm trong nhiễu như các thành phần v6; cổng không chọn. Stack ép thêm cả bốn thành phần v6/v7 đạt CV 0.952566, so với 0.952558 của stack v5. Bài này (58847113) đạt **0.95307** public, cao hơn `stack.csv` v5 (0.95298) 0.00009, chênh lệch nhỏ so với nhiễu public.
