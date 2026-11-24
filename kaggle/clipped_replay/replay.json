@@ -1,0 +1,22 @@
+{
+  "rows": 299984,
+  "zones": 16730,
+  "clip_cap": 0.02086590712294964,
+  "clipped_sha256": "3b9fe6d72e3102101ab33d35a17cdb90b1e41de40c3792a7dc1a1cd619d1bc8c",
+  "step_ab_sha256": "3e1dba5d31e01b6f36554459cfe092cf4c760b5d7d228f23bd4e2777dfc86038",
+  "incumbent_sha256": "52ec1113780c6245d9b28c63cc410db185d0e5b6719c3a257adde2ebb4fb3620",
+  "comparisons": {
+    "clipped": {
+      "spearman": 0.9998716588798701,
+      "median_rank_movement": 739.0,
+      "p95_rank_movement": 2769.0,
+      "top5_new_rows": 142
+    },
+    "step_ab": {
+      "spearman": 0.9998483421803168,
+      "median_rank_movement": 815.0,
+      "p95_rank_movement": 3030.0,
+      "top5_new_rows": 155
+    }
+  }
+}

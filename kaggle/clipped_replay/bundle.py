@@ -9,7 +9,7 @@ ap.add_argument('output', type=Path)
 args = ap.parse_args()
 args.output.mkdir(parents=True, exist_ok=True)
 shutil.copyfile(Path(__file__).with_name('replay.py'), args.output/'replay.py')
-metadata = {'id': 'huthnhlng/s6e11-clipped-step-ab-replay',
+metadata = {'id': 'huthnhlng/s6e11-clipped-and-step-ab-replay',
     'title': 'S6E11 Clipped and Step AB Replay', 'code_file': 'replay.py',
     'language': 'python', 'kernel_type': 'script', 'is_private': True,
     'enable_gpu': False, 'enable_internet': False,

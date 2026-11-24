@@ -368,5 +368,9 @@ Script dựng lại bài của repo 0.95568 từ v43 và residual 25%, kiểm tr
 ```bash
 python kaggle/clipped_replay/bundle.py /tmp/s6e11-clipped-kernel
 kaggle kernels push -p /tmp/s6e11-clipped-kernel
-kaggle kernels output huthnhlng/s6e11-clipped-step-ab-replay -p outputs/clipped-replay
+kaggle kernels output huthnhlng/s6e11-clipped-and-step-ab-replay -p outputs/clipped-replay
 ```
+
+Phiên [Kaggle replay](https://www.kaggle.com/code/huthnhlng/s6e11-clipped-and-step-ab-replay) hoàn tất với các checksum khớp. Bài `clipped.csv` (ID 58814996) đạt **0.95568**; bài `step_ab.csv` (ID 58815003) đạt **0.95569**, hơn bài trước của repo 0.00001. Tại lần tải leaderboard ngày 24/11/2026 06:14 UTC, tài khoản hạng 49/2.908; hạng 10 đạt 0.95782. Đây là ảnh chụp tạm thời của public leaderboard.
+
+Trên 299.984 dòng test không nhãn, clipped đổi 142 dòng và Step AB đổi 155 dòng trong top 5% so với bài cũ. Chênh lệch thứ hạng không thể hiện số dự đoán đúng hoặc sai. Các file này tái lập công khai: Step AB sử dụng trực tiếp đầu ra của tác giả, còn clipped khớp checksum của tác giả.
