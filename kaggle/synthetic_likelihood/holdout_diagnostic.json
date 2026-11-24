@@ -1,0 +1,11 @@
+{
+  "auc_delta": 3.7399593130760245e-05,
+  "bootstrap_ci95_fixed_predictions": [
+    -0.00013403492637588664,
+    0.00020188389081991214
+  ],
+  "sampled_pairs": 2338000,
+  "corrected_pairs": 2975,
+  "broken_pairs": 2968,
+  "caveats": "Paired bootstrap conditions on fixed predictions; both holdout and model choices have been inspected."
+}

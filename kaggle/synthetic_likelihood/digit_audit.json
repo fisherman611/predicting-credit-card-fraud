@@ -1,0 +1,248 @@
+{
+  "amount_usd": {
+    "train_test_tv": 0.0027129507558154575,
+    "folds": [
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.020866903491551306
+        },
+        "cvv0": {
+          "frauds": 1569,
+          "legitimate": 169807,
+          "fraud_vs_legit_tv": 0.03175487164911399
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.021782028781666192
+        },
+        "cvv0": {
+          "frauds": 1607,
+          "legitimate": 169674,
+          "fraud_vs_legit_tv": 0.026533553391477845
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.024493373356542017
+        },
+        "cvv0": {
+          "frauds": 1633,
+          "legitimate": 169534,
+          "fraud_vs_legit_tv": 0.025440393284105592
+        }
+      }
+    ]
+  },
+  "hours_since_last_txn": {
+    "train_test_tv": 0.001953523621417902,
+    "folds": [
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.02771252694782963
+        },
+        "cvv0": {
+          "frauds": 1569,
+          "legitimate": 169807,
+          "fraud_vs_legit_tv": 0.025731143206960225
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.026929275768113152
+        },
+        "cvv0": {
+          "frauds": 1607,
+          "legitimate": 169674,
+          "fraud_vs_legit_tv": 0.041982058804974076
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.02968177288237065
+        },
+        "cvv0": {
+          "frauds": 1633,
+          "legitimate": 169534,
+          "fraud_vs_legit_tv": 0.038318712211307726
+        }
+      }
+    ]
+  },
+  "distance_from_home_km": {
+    "train_test_tv": 0.003236873587598256,
+    "folds": [
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.03128089242673592
+        },
+        "cvv0": {
+          "frauds": 1569,
+          "legitimate": 169807,
+          "fraud_vs_legit_tv": 0.028795564002191167
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.03719655204612068
+        },
+        "cvv0": {
+          "frauds": 1607,
+          "legitimate": 169674,
+          "fraud_vs_legit_tv": 0.035615657241285834
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.03321284185136798
+        },
+        "cvv0": {
+          "frauds": 1633,
+          "legitimate": 169534,
+          "fraud_vs_legit_tv": 0.03507586528515893
+        }
+      }
+    ]
+  },
+  "account_balance_usd": {
+    "train_test_tv": 0.001969717981888386,
+    "folds": [
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.019474787705257332
+        },
+        "cvv0": {
+          "frauds": 1569,
+          "legitimate": 169807,
+          "fraud_vs_legit_tv": 0.03140217115158252
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.023982998315077685
+        },
+        "cvv0": {
+          "frauds": 1607,
+          "legitimate": 169674,
+          "fraud_vs_legit_tv": 0.03438875746197406
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.02618770501576599
+        },
+        "cvv0": {
+          "frauds": 1633,
+          "legitimate": 169534,
+          "fraud_vs_legit_tv": 0.02576277838539736
+        }
+      }
+    ]
+  },
+  "velocity_score": {
+    "train_test_tv": 0.003101374237606834,
+    "folds": [
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.06109456389113351
+        },
+        "cvv0": {
+          "frauds": 1569,
+          "legitimate": 169807,
+          "fraud_vs_legit_tv": 0.0691133081566981
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.05945095143008727
+        },
+        "cvv0": {
+          "frauds": 1607,
+          "legitimate": 169674,
+          "fraud_vs_legit_tv": 0.059706963664623705
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.06408201660720575
+        },
+        "cvv0": {
+          "frauds": 1633,
+          "legitimate": 169534,
+          "fraud_vs_legit_tv": 0.06293164727163097
+        }
+      }
+    ]
+  },
+  "merchant_risk_score": {
+    "train_test_tv": 0.003989858772238106,
+    "folds": [
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.03978951686577911
+        },
+        "cvv0": {
+          "frauds": 1569,
+          "legitimate": 169807,
+          "fraud_vs_legit_tv": 0.039162659314684115
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.032427863673864105
+        },
+        "cvv0": {
+          "frauds": 1607,
+          "legitimate": 169674,
+          "fraud_vs_legit_tv": 0.03760262945467981
+        }
+      },
+      {
+        "all": {
+          "frauds": 3117,
+          "legitimate": 183539,
+          "fraud_vs_legit_tv": 0.02482742507026367
+        },
+        "cvv0": {
+          "frauds": 1633,
+          "legitimate": 169534,
+          "fraud_vs_legit_tv": 0.01976846427147575
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "drift": {
+    "amount_usd": {
+      "train_test_digit_total_variation": 0.0027129507558154575
+    },
+    "hours_since_last_txn": {
+      "train_test_digit_total_variation": 0.001953523621417902
+    },
+    "distance_from_home_km": {
+      "train_test_digit_total_variation": 0.003236873587598256
+    },
+    "account_balance_usd": {
+      "train_test_digit_total_variation": 0.001969717981888386
+    },
+    "velocity_score": {
+      "train_test_digit_total_variation": 0.003101374237606834
+    },
+    "merchant_risk_score": {
+      "train_test_digit_total_variation": 0.003989858772238106
+    }
+  },
+  "development": {
+    "spline": {
+      "model_fold_auc": {
+        "0": 0.9445423254234615,
+        "1": 0.9440428157850806,
+        "2": 0.9423940065989109
+      },
+      "weights": {
+        "0.05": {
+          "fold_auc": [
+            0.9506772429689223,
+            0.9517220093333287,
+            0.9479169603808337
+          ],
+          "mean_fold_auc": 0.950105404227695
+        },
+        "0.1": {
+          "fold_auc": [
+            0.950704732473683,
+            0.951626320021713,
+            0.947989434856807
+          ],
+          "mean_fold_auc": 0.950106829117401
+        },
+        "0.2": {
+          "fold_auc": [
+            0.9506318629557058,
+            0.9513259535047132,
+            0.948000730261364
+          ],
+          "mean_fold_auc": 0.9499861822405943
+        }
+      }
+    },
+    "digits": {
+      "model_fold_auc": {
+        "0": 0.9443424743728255,
+        "1": 0.9438512938280247,
+        "2": 0.9422057620921096
+      },
+      "weights": {
+        "0.05": {
+          "fold_auc": [
+            0.950672786510563,
+            0.9517124278167581,
+            0.9479091513093607
+          ],
+          "mean_fold_auc": 0.9500981218788939
+        },
+        "0.1": {
+          "fold_auc": [
+            0.9506948564235831,
+            0.9516072277814973,
+            0.9479723414242534
+          ],
+          "mean_fold_auc": 0.9500914752097779
+        },
+        "0.2": {
+          "fold_auc": [
+            0.9506090256823325,
+            0.9512914039351109,
+            0.9479689634655244
+          ],
+          "mean_fold_auc": 0.9499564643609893
+        }
+      }
+    },
+    "digits_interactions": {
+      "model_fold_auc": {
+        "0": 0.9445762448486281,
+        "1": 0.9443240542284087,
+        "2": 0.9424136345929947
+      },
+      "weights": {
+        "0.05": {
+          "fold_auc": [
+            0.9506667507581743,
+            0.9517178893598622,
+            0.9479001728436369
+          ],
+          "mean_fold_auc": 0.9500949376538911
+        },
+        "0.1": {
+          "fold_auc": [
+            0.9506833993314803,
+            0.9516217857785343,
+            0.9479554289069535
+          ],
+          "mean_fold_auc": 0.9500868713389893
+        },
+        "0.2": {
+          "fold_auc": [
+            0.9505969436897146,
+            0.9513289774988147,
+            0.9479477037382071
+          ],
+          "mean_fold_auc": 0.9499578749755789
+        }
+      }
+    }
+  },
+  "selection": {
+    "variant": "spline",
+    "weight": 0.1,
+    "mean_fold_auc": 0.950106829117401,
+    "baseline_mean_fold_auc": 0.950060812259184
+  },
+  "holdout": {
+    "baseline": {
+      "auc": 0.949605569998634,
+      "auc_cvv0": 0.9285422836627742,
+      "caught_top5": 1697,
+      "missed_cvv0": 534
+    },
+    "selected": {
+      "auc": 0.9496429695917648,
+      "auc_cvv0": 0.9286725364995281,
+      "caught_top5": 1697,
+      "missed_cvv0": 536
+    }
+  },
+  "limitations": [
+    "EDA and the holdout were previously inspected.",
+    "Development model/weight selection is exploratory.",
+    "Two models are cross-fit on the same existing base folds; this is not a repeated, nested evaluation.",
+    "OOF baseline is not the 0.95569 Step AB, whose OOF predictions are unavailable."
+  ],
+  "seconds": 113.4
+}
