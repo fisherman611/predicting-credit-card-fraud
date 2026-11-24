@@ -6,6 +6,7 @@ Members are tried greedily, best single-fold-sum gain first.
 """
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -53,7 +54,7 @@ def main():
     y = train.is_fraud.to_numpy().astype(int)
     cvv0 = train.cvv_retry_count.to_numpy() == 0
     pool = collect(args.input, y, verbose=False)
-    v6 = sorted(k for k in pool if k.split(':', 1)[1].startswith('oof_v6_'))
+    v6 = sorted(k for k in pool if re.match(r'oof_v\d+_', k.split(':', 1)[1]))
     base = sorted(k for k in pool if k not in v6)
     print('base members', len(base), 'v6 members', v6, flush=True)
     folds = list(StratifiedKFold(5, shuffle=True, random_state=SEED).split(np.zeros(len(y)), y))
