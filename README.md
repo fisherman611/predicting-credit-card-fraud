@@ -341,3 +341,20 @@ python kaggle/train.py --experiment v3 --compare-baseline --data data --output s
 python kaggle/train.py --experiment v1 --save-oof --data data --output submissions/v1
 python kaggle/train.py --experiment residual --control submissions/v1 --data data --output submissions/residual
 ```
+
+## Sàng lọc residual cho cặp xếp hạng khó
+
+Thử nghiệm `kaggle/pairwise_repair/evaluate.py` dùng dự đoán baseline OOF từ phiên residual trước. Mô hình residual được tăng gấp đôi trọng số cho fraud CVV retry = 0 và 10% giao dịch hợp lệ có điểm baseline cao nhất. Đây là heuristic nhấn mạnh hai phía của cặp xếp hạng khó, chưa phải hàm loss pairwise. Thử các trọng số hiệu chỉnh 0, 0.05, 0.10 và 0.20 bằng 3 fold meta với hai seed 113 và 937.
+
+| Trọng số | AUC development trung bình hai seed |
+| --- | ---: |
+| 0 (baseline) | 0.95005411 |
+| 0.05 | 0.95004909 |
+| 0.10 | 0.95003804 |
+| 0.20 | 0.94999412 |
+
+Ở seed 113, trọng số 0.05 giảm fraud CVV = 0 bị bỏ sót tại top 5% từ 2.096 xuống 2.086, nhưng AUC toàn bộ giảm. Cả hai seed chọn trọng số 0; vì vậy holdout của bản được chọn trùng baseline: AUC 0.94960557, bắt 1.697 fraud ở top 5%. Không tạo bài nộp mới.
+
+Hai seed chỉ thay đổi các meta fold trên cùng một bộ dự đoán baseline OOF; chúng không phải hai lần huấn luyện baseline độc lập. Meta fold không lồng hoàn toàn trong vòng tạo dự đoán baseline; holdout cũng từng được xem trước đây. Chưa có dự đoán holdout tương ứng cho toàn bộ blend frontier public 0.95568. Kết quả này chỉ sàng lọc heuristic trên baseline residual, không kết luận trực tiếp về blend frontier. Chi tiết: `kaggle/pairwise_repair/results.json`. Thử nghiệm chạy trên máy vì token Kaggle đã được xóa sau lần nộp trước.
+
+Để chạy lại, truyền `--train`, `--development`, `--holdout` và `--output` cho script; hai file NPZ là `development_versions.npz` và `holdout.npz` trong output của [phiên Kaggle residual và tương tác](https://www.kaggle.com/code/huthnhlng/s6e11-fraud-residual-interactions/output).

@@ -1,0 +1,137 @@
+{
+  "development": {
+    "113": {
+      "0.0": {
+        "overall": {
+          "auc": 0.9500541142190698,
+          "cvv0_auc": 0.9309206142385663,
+          "caught_top5": 6788,
+          "missed_cvv0_top5": 2096
+        },
+        "fold_auc": [
+          0.9492396597707383,
+          0.9513594639040884,
+          0.9495628286016417
+        ]
+      },
+      "0.05": {
+        "overall": {
+          "auc": 0.9500490887953464,
+          "cvv0_auc": 0.930905277125623,
+          "caught_top5": 6793,
+          "missed_cvv0_top5": 2086
+        },
+        "fold_auc": [
+          0.9492384921244611,
+          0.9513648284346649,
+          0.9495543229627413
+        ]
+      },
+      "0.1": {
+        "overall": {
+          "auc": 0.9500376892892584,
+          "cvv0_auc": 0.9308896515966837,
+          "caught_top5": 6789,
+          "missed_cvv0_top5": 2084
+        },
+        "fold_auc": [
+          0.9492314984826113,
+          0.9513627151347406,
+          0.9495414701138235
+        ]
+      },
+      "0.2": {
+        "overall": {
+          "auc": 0.9499940777396444,
+          "cvv0_auc": 0.9308595542027893,
+          "caught_top5": 6780,
+          "missed_cvv0_top5": 2074
+        },
+        "fold_auc": [
+          0.9492046933094634,
+          0.9513365165083866,
+          0.9494841697955347
+        ]
+      }
+    },
+    "937": {
+      "0.0": {
+        "overall": {
+          "auc": 0.9500541142190698,
+          "cvv0_auc": 0.9309206142385663,
+          "caught_top5": 6788,
+          "missed_cvv0_top5": 2096
+        },
+        "fold_auc": [
+          0.9511125941151084,
+          0.9501370308943281,
+          0.9489181637504447
+        ]
+      },
+      "0.05": {
+        "overall": {
+          "auc": 0.9500490969525559,
+          "cvv0_auc": 0.9309067621003332,
+          "caught_top5": 6792,
+          "missed_cvv0_top5": 2086
+        },
+        "fold_auc": [
+          0.9511194758866562,
+          0.9501313237609517,
+          0.9489118605581154
+        ]
+      },
+      "0.1": {
+        "overall": {
+          "auc": 0.9500383989664868,
+          "cvv0_auc": 0.930893572583553,
+          "caught_top5": 6789,
+          "missed_cvv0_top5": 2083
+        },
+        "fold_auc": [
+          0.9511187452337461,
+          0.9501191141662704,
+          0.9489017607674112
+        ]
+      },
+      "0.2": {
+        "overall": {
+          "auc": 0.9499941674689492,
+          "cvv0_auc": 0.9308660464223478,
+          "caught_top5": 6781,
+          "missed_cvv0_top5": 2072
+        },
+        "fold_auc": [
+          0.9511020398513025,
+          0.9500633171051651,
+          0.9488568623208855
+        ]
+      }
+    }
+  },
+  "development_mean_auc": {
+    "0.0": 0.9500541142190698,
+    "0.05": 0.9500490928739511,
+    "0.1": 0.9500380441278726,
+    "0.2": 0.9499941226042967
+  },
+  "selected_weight": 0.0,
+  "holdout_baseline": {
+    "auc": 0.949605569998634,
+    "cvv0_auc": 0.9285422836627742,
+    "caught_top5": 1697,
+    "missed_cvv0_top5": 534
+  },
+  "holdout_selected": {
+    "auc": 0.949605569998634,
+    "cvv0_auc": 0.9285422836627742,
+    "caught_top5": 1697,
+    "missed_cvv0_top5": 534
+  },
+  "limitations": [
+    "Development meta folds are not nested with base-model OOF fits.",
+    "Holdout was previously inspected and cannot serve as a pristine final test.",
+    "Only the residual baseline is evaluated; the 0.95568 frontier blend lacks matched holdout predictions."
+  ],
+  "seconds": 16.7
+}
