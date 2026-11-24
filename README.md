@@ -396,3 +396,25 @@ Tokenizer lấy từ GPT-2 `tokenizer.json`, checksum `8414cab924d8b9b33013f0d22
 So sánh thêm model `count` được chọn sau ablation với wide stack trên cùng ba fold bằng `encoding_ablation.py --variants count --wide ...`. Với blend rank 5%, chênh AUC từng fold lần lượt **−0.000058, +0.000065, −0.000030**; trọng số 10% cho **−0.000145, +0.000099, −0.000087**. Biến thể `count` đã được chọn từ chính các fold này nên kết quả chỉ để thăm dò; wide stack còn có thể chia sẻ dòng train ở tầng meta. Chưa có tín hiệu ổn định để nộp blend với Step AB.
 
 [Phiên ablation trên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-encoding-ablation-audit) hoàn tất sau 438,6 giây, với AUC từng fold khớp chạy local trong sai số số học (chênh tối đa 1.2e-16). Không nộp bài vì cả thử GPT-2 medium fold 0 và blend count với wide không cho thấy cải thiện ổn định; điểm 0.95569 giữ làm đối chứng.
+
+## V5: Mega stack trên OOF công khai
+
+Chiến lược và giới hạn ghi ở `kaggle/mega_stack/STRATEGY.md`. Trước khi chọn hướng, repo kiểm tra rò rỉ: thứ tự `id` (AUC 0.4985), dòng trùng giữa train và test, và [bộ dữ liệu gốc 20.000 dòng](https://www.kaggle.com/datasets/uditjain13/credit-card-fraud-detection-2026). Không dòng tổng hợp nào trùng dòng gốc, số cột trùng chỉ ở mức ngẫu nhiên và nhãn gốc chỉ tách được ở AUC 0.9435 bằng logistic. Không tìm thấy rò rỉ.
+
+`kaggle/mega_stack/members.py` gom 95 cặp OOF/test từ 7 bộ dữ liệu công khai, giữ 79 cặp sau khi lọc AUC < 0.90 và trùng lặp (Spearman > 0.99995). `stack.py` huấn luyện logistic trên logit-rank với 5 fold (seed 2027), trộn với wide LM stack của goodpjw2008 bằng trọng số chọn lồng (chọn trên 4 fold, chấm fold thứ 5), rồi đẩy các vùng rủi ro thấp (0 ca fraud trên 39.149 dòng train) xuống cuối.
+
+| Cấu hình | CV AUC |
+| --- | ---: |
+| Wide LM stack công khai | 0.952565 |
+| Logistic stack 79 thành phần | 0.952465 |
+| LightGBM meta trên thành phần | 0.951842 |
+| LightGBM meta trên thành phần + đặc trưng gốc | 0.951909 |
+| Trộn 20% logistic + 80% wide, trọng số chọn lồng | 0.952558 |
+| Trộn + đẩy vùng không gian lận | 0.952617 |
+
+Stacker không vượt wide stack; vùng không gian lận chỉ thêm khoảng +0.00005 và ước lượng này lạc quan vì vùng được chọn từ nhãn train. `blend.csv` cộng 15% phần chênh đã cắt (phân vị 95%) giữa stack và Step AB vào logit-rank của Step AB, đổi 238 dòng trong top 5% test. Trọng số 15% không được kiểm chứng bằng CV vì Step AB không có OOF.
+
+```bash
+python kaggle/mega_stack/bundle.py /tmp/s6e11-v5
+kaggle kernels push -p /tmp/s6e11-v5
+```
