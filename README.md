@@ -418,3 +418,14 @@ Stacker không vượt wide stack; vùng không gian lận chỉ thêm khoảng 
 python kaggle/mega_stack/bundle.py /tmp/s6e11-v5
 kaggle kernels push -p /tmp/s6e11-v5
 ```
+
+[Phiên Kaggle v5](https://www.kaggle.com/code/huthnhlng/s6e11-v5-mega-stack) chạy lại cùng mã: logistic 0.952435, trọng số trộn chọn lồng 0.1, trộn + vùng 0.952614 (khác chạy local do phiên bản thư viện).
+
+| Bài nộp | ID | Public ROC AUC |
+| --- | --- | ---: |
+| `stack.csv`: mega stack thuần, có CV | 58832674 | 0.95298 |
+| `blend.csv`: Step AB + 15% stack | 58832658 | 0.95559 |
+| Đối chứng: wide LM stack công khai | 58770176 | 0.95285 |
+| Đối chứng: Step AB | 58815003 | 0.95569 |
+
+Stack thuần hơn wide LM stack 0.00013 trên public, cùng chiều với CV. Blend vào Step AB giảm 0.00010 so với Step AB. Khoảng cách 0.003 giữa stack có CV và Step AB chưa có giải thích bằng OOF; nó có thể là tín hiệu thật trong các thành phần không công bố OOF hoặc là overfit public leaderboard. Khi chọn hai bài cuối, một phương án phòng thủ là Step AB cùng `stack.csv`.
