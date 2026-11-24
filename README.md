@@ -310,7 +310,7 @@ python kaggle/voting/export.py --frontier data/frontier_095567.csv --members out
 
 Trên holdout, baseline đạt 0.949606, residual 25% đạt 0.949653; số fraud bắt được ở top 5% là 1.697 và 1.700. Bootstrap phân tầng ghép cặp 300 lượt trên các dự đoán cố định cho khoảng chênh AUC 95% [0.0000234, 0.0000755]. Development và holdout cho kết quả trái chiều; meta-OOF có thể chia sẻ dòng train giữa các fold của mô hình gốc. Các vòng EDA trước cũng đã khám phá toàn bộ train.
 
-Phiên Kaggle lưu file test của từng phiên bản. Các mô hình test học trên development 80%, đồng nhất với tập dùng tạo OOF huấn luyện residual. Bài thử dự kiến ghép 95% thứ hạng của frontier 0.95567 với 5% residual được chọn. Phép ghép cuối chưa có holdout độc lập cho toàn bộ công thức và được nộp để đo public; checksum trong `kaggle/repair/export_metadata.json`.
+Phiên Kaggle lưu file test của từng phiên bản. Các mô hình test học trên development 80%, đồng nhất với tập dùng tạo OOF huấn luyện residual. Bài nộp 58801958 ghép 95% thứ hạng của frontier 0.95567 với 5% residual được chọn, đạt **0.95568 public AUC**, tăng 0.00001 so với frontier. Phép ghép cuối chưa có holdout độc lập cho toàn bộ công thức; mức tăng public rất nhỏ và chưa xác nhận khả năng tổng quát hóa. Checksum trong `kaggle/repair/export_metadata.json`.
 
 ```bash
 python kaggle/repair/bundle.py /tmp/s6e11-repair-kernel
