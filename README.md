@@ -506,3 +506,20 @@ Kernel `huthnhlng/s6e11-v9-stack` (`kaggle/v9/stack_v9.py`). It adds 125 real-OO
 | mean9w mean(mix9, wide, davut) | 0.952713 | 1/5 |
 
 The logistic stack over 187 members alone reaches 0.952565, the same as the wide stack. The new members are already summarised by the existing stacks, so v8 stays the CV-best file and nothing was submitted.
+
+## V10: Laya pilot (gate 1 failed)
+
+Kernel `huthnhlng/s6e11-v10-laya-pilot` (`kaggle/v10/laya_pilot.py`) fine-tunes the open-source System 1 decision model Laya (`convaiinnovations/laya`, multilingual mmBERT checkpoint), the open counterpart of TypeSafe's JEV.
+
+- **Data:** each row becomes a JSON state with one `noul` question ("Is this card transaction fraudulent?"), 296 tokens on average.
+- **Training:** RLCD (GRPO with proper scoring rules plus soft CE) for 1 epoch on 100k stratified fit rows of fold 0, on 2×T4.
+- **Scoring:** all 139,992 held-out rows of fold 0.
+
+| Run | Labels | Fold-0 AUC | AUC CVV=0 | Spearman vs wide | v8 + 0.05·Laya |
+| --- | --- | ---: | ---: | ---: | ---: |
+| a0 | hard (smoothing 0.05) | 0.8222 | 0.8154 | 0.39 | −0.00026 |
+| a30 | 0.7·y + 0.3·wide-stack teacher | 0.8953 | 0.8420 | 0.53 | −0.00016 |
+
+For reference, v8 reaches 0.95513 on the same rows. The teacher's soft labels lift Laya by +0.073 AUC, but a text encoder reading digits as JSON stays far below the tree and GLM members (0.947–0.951), and it lowers v8 at every fixed weight. Gate 1 (AUC ≥ 0.948) fails, so the 5-fold run was not started.
+
+Each run took about 60 minutes of training and 65 minutes of scoring. The a30 test file was submitted once as a check.
