@@ -534,3 +534,32 @@ Kernel `huthnhlng/s6e11-v10b-laya-epochs`. It uses the same fold 0 and 100k fit 
 | a60 | 0.4·y + 0.6·teacher | **0.9490** | 0.9263 | 0.937 | −0.00001 | 0.94720 |
 
 More epochs (+0.049 AUC for a30) and a stronger teacher both help. a60 passes gate 1 (AUC ≥ 0.948, Spearman < 0.97). However, every fixed weight next to v8 still lowers the fold-0 AUC, and at 0.937 Spearman most of what Laya learnt is the teacher itself. Each run took 136–140 minutes of training and 46–48 minutes of scoring per T4.
+
+## V11: residual language models on top of v8 (running)
+
+V10b showed that distilling the stack into a text model mostly re-learns the stack. V11 changes the objective. v8 becomes a fixed offset rather than a target, so the language model can only gain by re-ordering rows that v8 gets wrong:
+
+    p(fraud | row) = sigmoid(t(row) + s(row))
+
+- **t:** v8's rank-logit, Platt-scaled on the fit rows of the fold. It is out-of-fold for every row.
+- **s:** the language-model score. Only s is trained, on hard labels.
+- **Blend:** t + β·s, where β = 0 is v8 exactly.
+
+Two scorers share the same loss (Laya's RLCD plus cross-entropy on the two logits `[no, yes]`). Code: `kaggle/v11/residual_lm.py`.
+
+| Scorer | Model | Score | Training |
+| --- | --- | --- | --- |
+| `laya` | Laya multilingual (mmBERT, 322M), `noul` question | logit gap true − false | 100k fit rows, 2 epochs |
+| `qwen` | Qwen2.5-0.5B-Instruct + LoRA r=16 | log-prob gap of " Yes" vs " No" after "Is this transaction fraudulent? Answer:" | 60k fit rows, 1 epoch; zero-shot AUC reported first |
+
+Zone rows are skipped for training and scoring.
+
+Before running this, two cheap checks were made on fold 0:
+
+- **Raw-feature residual:** a LightGBM fitted on the raw features with v8 as `init_score` lowers v8 by 1–5·10⁻⁵ at every weight. The tabular residual is empty, so a text model can only help through what trees do not see, such as digits and strings.
+- **Public LLM-logprob OOF:** the GPT-2 target-first model (Chris Deotte's S6E10 recipe; OOF 0.9500, Spearman 0.977 with v8) lowers v8 on all five folds at every weight from 0.02 to 0.2.
+
+**Gates:**
+
+- **Pilot (`huthnhlng/s6e11-v11-residual-lm`, fold 0):** β is picked on one stratified half of the held-out fold and scored on the other half, in both directions. The gate passes only if both gains are > 0.
+- **Pipeline (`kaggle/v11/stack_v11.py`):** with all five folds, β_k for fold k is picked on the other four folds. The residual replaces v8 only if it wins on at least 4 of 5 folds. Otherwise `stack_v11.csv` is plain v8.
