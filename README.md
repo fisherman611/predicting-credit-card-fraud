@@ -523,3 +523,14 @@ Kernel `huthnhlng/s6e11-v10-laya-pilot` (`kaggle/v10/laya_pilot.py`) fine-tunes 
 For reference, v8 reaches 0.95513 on the same rows. The teacher's soft labels lift Laya by +0.073 AUC, but a text encoder reading digits as JSON stays far below the tree and GLM members (0.947–0.951), and it lowers v8 at every fixed weight. Gate 1 (AUC ≥ 0.948) fails, so the 5-fold run was not started.
 
 Each run took about 60 minutes of training and 65 minutes of scoring. The a30 test file was submitted once as a check.
+
+### V10b: 3 epochs, compact state, more teacher weight (gate 1 passed, gate 2 unlikely)
+
+Kernel `huthnhlng/s6e11-v10b-laya-epochs`. It uses the same fold 0 and 100k fit rows as v10, with 3 epochs instead of 1. The state is compact `name=value; ...; flags: ...` text, 199 tokens instead of 296.
+
+| Run | Labels | Fold-0 AUC | AUC CVV=0 | Spearman vs wide | v8 + 0.05·Laya | Public |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| a30 | 0.7·y + 0.3·teacher | 0.9443 | 0.9194 | 0.865 | −0.00004 | – |
+| a60 | 0.4·y + 0.6·teacher | **0.9490** | 0.9263 | 0.937 | −0.00001 | 0.94720 |
+
+More epochs (+0.049 AUC for a30) and a stronger teacher both help. a60 passes gate 1 (AUC ≥ 0.948, Spearman < 0.97). However, every fixed weight next to v8 still lowers the fold-0 AUC, and at 0.937 Spearman most of what Laya learnt is the teacher itself. Each run took 136–140 minutes of training and 46–48 minutes of scoring per T4.
