@@ -573,4 +573,6 @@ Before running this, two cheap checks were made on fold 0:
   - The only β that helps is 0.05, at +9·10⁻⁷. The honest split-half check passes on paper, with gains of +2.7·10⁻⁷ and +1.9·10⁻⁶. That is far below fold noise and the public-LB resolution.
 - **Part of s not explained by v8:** for both models, regressing s on t gives slope ≈ −0.75. The remainder alone scores about 0.75 AUC, but adding it to v8 never gains more than 2·10⁻⁶.
 
+**Public check:** `v8_plus_qwen_f0.csv` (v8 + 0.05·s) scores 0.95351 public, against 0.95347 for v8 (+4·10⁻⁵). That is inside public-LB noise.
+
 **Decision:** v11 stops here. Running folds 1–4 for Qwen would cost about 10 GPU-hours for an expected change of about 10⁻⁶. All four ways tried of adding a model on top of v8 (raw-feature LightGBM residual, public GPT-2 log-probs, Laya residual, Qwen residual) come out empty, so v8 already uses what these row texts carry.
