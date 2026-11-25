@@ -493,3 +493,16 @@ Thêm vào stack v5, mô hình chữ số cho +0.0000042 (thắng 3/5 fold), n�
 | Trung bình + vùng | **0.952723** (cao hơn wide + vùng ở 5/5 fold) |
 
 [Phiên Kaggle](https://www.kaggle.com/code/huthnhlng/s6e11-v8-stack-mean) cho file giống hệt bản local. Bài 58847974 đạt **0.95347** public, bài có CV tốt nhất của repo, cao hơn v7 stack (0.95307).
+
+## V9: new OOF member sources (no gain)
+
+Kernel `huthnhlng/s6e11-v9-stack` (`kaggle/v9/stack_v9.py`). It adds 125 real-OOF members the v5 stack never saw (goodpjw2008 OOF bank, busyaprime's 52 models + TabM, yekenot's RealMLP runs) to the v5 pool, giving 187 members. The nested logistic stack is mixed with the wide stack, and the zones are applied. CV uses StratifiedKFold(5, seed 2027).
+
+| Variant | OOF AUC + zones | Folds over v8 |
+| --- | ---: | ---: |
+| v8 mean(wide, davut) | **0.952723** | – |
+| mix9 (187-member stack + wide) | 0.952664 | 1/5 |
+| mean9 mean(mix9, davut) | 0.952714 | 2/5 |
+| mean9w mean(mix9, wide, davut) | 0.952713 | 1/5 |
+
+The logistic stack over 187 members alone reaches 0.952565, the same as the wide stack. The new members are already summarised by the existing stacks, so v8 stays the CV-best file and nothing was submitted.
