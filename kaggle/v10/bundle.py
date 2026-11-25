@@ -1,0 +1,31 @@
+"""Package the v10 Laya pilot: python kaggle/v10/bundle.py OUT -> huthnhlng/s6e11-v10-laya-pilot.
+
+Kaggle runs script kernels through a notebook, where __file__ is not set, so the kernel is a small
+launcher that writes laya_pilot.py to /kaggle/working and runs it as a file (its workers re-launch
+the same file, one per GPU).
+"""
+import argparse
+import json
+from pathlib import Path
+
+ap = argparse.ArgumentParser()
+ap.add_argument('output', type=Path)
+args = ap.parse_args()
+args.output.mkdir(parents=True, exist_ok=True)
+src = (Path(__file__).resolve().parent / 'laya_pilot.py').read_text()
+launcher = (
+    'import subprocess, sys\n'
+    'from pathlib import Path\n'
+    f'SRC = {src!r}\n'
+    "path = Path('/kaggle/working/laya_pilot.py')\n"
+    'path.write_text(SRC)\n'
+    'subprocess.run([sys.executable, str(path)], check=True)\n'
+)
+(args.output / 'launcher.py').write_text(launcher)
+meta = {'id': 'huthnhlng/s6e11-v10-laya-pilot', 'title': 'S6E11 V10 Laya Pilot', 'code_file': 'launcher.py',
+        'language': 'python', 'kernel_type': 'script', 'is_private': True, 'enable_gpu': True,
+        'enable_internet': True, 'machine_shape': 'NvidiaTeslaT4',
+        'competition_sources': ['playground-series-s6e11'],
+        'dataset_sources': ['goodpjw2008/s6e11-fraud-series-artifacts'],
+        'kernel_sources': ['davutkursun/s6e11-the-0-9526-wall-who-still-adds-signal']}
+(args.output / 'kernel-metadata.json').write_text(json.dumps(meta, indent=2) + '\n')
