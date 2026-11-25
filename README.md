@@ -567,4 +567,10 @@ Before running this, two cheap checks were made on fold 0:
 **Pilot 1 result (fold 0, v8 = 0.95513):**
 
 - **Laya:** trained 6,250 steps in 96 min and scored in 47 min. On its own, the residual has AUC 0.230 and Spearman −0.956 with v8. It learned to shrink v8's own logit, not new information. t + s scores 0.8929. Every β lowers v8: −3.5·10⁻⁵ at 0.05 and −0.062 at 1.0. The honest split-half check picked β = 0 on both halves, so the gate fails.
-- **Qwen:** did not run. Kaggle's torchao 0.10 breaks peft's LoRA dispatch. The fix uninstalls torchao before the workers start, and Qwen is rerunning alone (kernel version 2).
+- **Qwen:** the first run did not start because Kaggle's torchao 0.10 breaks peft's LoRA dispatch. Version 2 uninstalls torchao first. It trained 1,875 steps on 60k rows in 52 min and scored in 91 min.
+  - Zero-shot AUC is 0.581: the raw LLM barely knows this data.
+  - After training, the residual has AUC 0.140 and Spearman −0.922 with v8, the same shrinkage of v8's logit that Laya learned.
+  - The only β that helps is 0.05, at +9·10⁻⁷. The honest split-half check passes on paper, with gains of +2.7·10⁻⁷ and +1.9·10⁻⁶. That is far below fold noise and the public-LB resolution.
+- **Part of s not explained by v8:** for both models, regressing s on t gives slope ≈ −0.75. The remainder alone scores about 0.75 AUC, but adding it to v8 never gains more than 2·10⁻⁶.
+
+**Decision:** v11 stops here. Running folds 1–4 for Qwen would cost about 10 GPU-hours for an expected change of about 10⁻⁶. All four ways tried of adding a model on top of v8 (raw-feature LightGBM residual, public GPT-2 log-probs, Laya residual, Qwen residual) come out empty, so v8 already uses what these row texts carry.
