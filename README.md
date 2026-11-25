@@ -535,7 +535,7 @@ Kernel `huthnhlng/s6e11-v10b-laya-epochs`. It uses the same fold 0 and 100k fit 
 
 More epochs (+0.049 AUC for a30) and a stronger teacher both help. a60 passes gate 1 (AUC ≥ 0.948, Spearman < 0.97). However, every fixed weight next to v8 still lowers the fold-0 AUC, and at 0.937 Spearman most of what Laya learnt is the teacher itself. Each run took 136–140 minutes of training and 46–48 minutes of scoring per T4.
 
-## V11: residual language models on top of v8 (running)
+## V11: residual language models on top of v8
 
 V10b showed that distilling the stack into a text model mostly re-learns the stack. V11 changes the objective. v8 becomes a fixed offset rather than a target, so the language model can only gain by re-ordering rows that v8 gets wrong:
 
@@ -563,3 +563,8 @@ Before running this, two cheap checks were made on fold 0:
 
 - **Pilot (`huthnhlng/s6e11-v11-residual-lm`, fold 0):** β is picked on one stratified half of the held-out fold and scored on the other half, in both directions. The gate passes only if both gains are > 0.
 - **Pipeline (`kaggle/v11/stack_v11.py`):** with all five folds, β_k for fold k is picked on the other four folds. The residual replaces v8 only if it wins on at least 4 of 5 folds. Otherwise `stack_v11.csv` is plain v8.
+
+**Pilot 1 result (fold 0, v8 = 0.95513):**
+
+- **Laya:** trained 6,250 steps in 96 min and scored in 47 min. On its own, the residual has AUC 0.230 and Spearman −0.956 with v8. It learned to shrink v8's own logit, not new information. t + s scores 0.8929. Every β lowers v8: −3.5·10⁻⁵ at 0.05 and −0.062 at 1.0. The honest split-half check picked β = 0 on both halves, so the gate fails.
+- **Qwen:** did not run. Kaggle's torchao 0.10 breaks peft's LoRA dispatch. The fix uninstalls torchao before the workers start, and Qwen is rerunning alone (kernel version 2).

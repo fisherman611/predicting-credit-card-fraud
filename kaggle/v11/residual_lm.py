@@ -462,6 +462,8 @@ def main():
         worker(args)
         return
     subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'laya==0.5.3', 'peft'], check=True)
+    # Kaggle ships torchao 0.10, which peft's LoRA dispatch rejects; peft works without it.
+    subprocess.run([sys.executable, '-m', 'pip', 'uninstall', '-y', '-q', 'torchao'], check=False)
     parent(args)
 
 
