@@ -32,7 +32,7 @@ SEED = 2027
 FOLD = 0
 BASE_MODEL, SUBFOLDER = 'convaiinnovations/laya', 'multilingual'
 QUESTION = {'t': 'noul', 'ins': 'Is this card transaction fraudulent?', 'crit': {}}
-RUNS = {'a0': 0.0, 'a30': 0.3}
+RUNS = {'a0': 0.0, 'a30': 0.3}  # default runs; --alphas overrides (run name aXX means alpha = XX / 100)
 FLAGS = ['is_new_merchant', 'is_foreign_transaction', 'used_vpn', 'ip_country_mismatch',
          'billing_shipping_mismatch', 'is_ai_generated_scam_attempt']
 LABEL_SMOOTH = 0.05
@@ -70,13 +70,29 @@ def model_dir():
 
 
 # ---------------------------------------------------------------- parent
-def tokenize(tok, cfg, frame, cols):
+def state_text(cols, row, fmt):
+    """json: Laya's own JSON serialization. compact: 'name=value; ...' with only the True flags listed,
+    about half the tokens, so each epoch costs about half as much."""
+    from laya.common import serialize_state
+    if fmt == 'json':
+        return serialize_state({c: str(v) for c, v in zip(cols, row)})
+    parts, flags = [], []
+    for c, v in zip(cols, row):
+        if isinstance(v, (bool, np.bool_)):
+            if v:
+                flags.append(c)
+        else:
+            parts.append(f'{c}={v}')
+    return '; '.join(parts) + '; flags: ' + (', '.join(flags) if flags else 'none')
+
+
+def tokenize(tok, cfg, frame, cols, fmt='json'):
     """Padded int32 id matrix: fixed question head + serialized state, clamped to max_len."""
-    from laya.common import build_head, serialize_state, uses_parallel_layout
+    from laya.common import build_head, uses_parallel_layout
     assert not uses_parallel_layout(cfg), 'pilot assumes the sequential option layout'
     head, markers, _ = build_head(tok, QUESTION, cfg['head_max_len'])
     room = cfg['max_len'] - len(head) - 1
-    texts = [serialize_state({c: str(v) for c, v in zip(cols, row)}).replace(tok.mask_token, ' ')
+    texts = [state_text(cols, row, fmt).replace(tok.mask_token, ' ')
              for row in frame[cols].itertuples(index=False, name=None)]
     out = []
     for i in range(0, len(texts), 20000):
@@ -98,6 +114,7 @@ def parent(args):
     from transformers import AutoTokenizer
 
     t0 = time.time()
+    runs = RUNS if args.alphas is None else {f'a{round(a * 100)}': a for a in args.alphas}
     work = args.output / 'pilot'
     work.mkdir(parents=True, exist_ok=True)
     train = pd.read_csv(find(args.input, 'train.csv', 'playground-series-s6e11'))
@@ -121,7 +138,7 @@ def parent(args):
     cfg = json.load(open(os.path.join(mdir, 'rl_agent_config.json')))
     tok = AutoTokenizer.from_pretrained(os.path.join(mdir, 'tokenizer'))
     for name, rows, frame in (('train', sub, train.iloc[sub]), ('val', val, train.iloc[val]), ('test', None, test)):
-        ids, lens, markers = tokenize(tok, cfg, frame, cols)
+        ids, lens, markers = tokenize(tok, cfg, frame, cols, args.state_format)
         np.save(work / f'{name}_ids.npy', ids)
         np.save(work / f'{name}_lens.npy', lens)
         print(f'{name}: {ids.shape} tokens, mean length {lens.mean():.0f}, {time.time() - t0:.0f}s', flush=True)
@@ -135,7 +152,7 @@ def parent(args):
     n_gpu = torch.cuda.device_count()
     print('GPUs', n_gpu, flush=True)
     procs = []
-    for i, run in enumerate(RUNS):
+    for i, run in enumerate(runs):
         env = dict(os.environ, CUDA_VISIBLE_DEVICES=str(i % max(1, n_gpu)))
         cmd = [sys.executable, __file__, '--worker', run, '--output', str(args.output),
                '--epochs', str(args.epochs), '--micro-batch', str(args.micro_batch),
@@ -160,11 +177,12 @@ def parent(args):
     yv, zv = y[val], z_tr[val]
     cvv0 = train.cvv_retry_count.to_numpy()[val] == 0
     v8_val = lr(v8_oof[val]) - 100 * zv
-    res = {'fold': FOLD, 'train_rows': int(len(sub)), 'val_rows': int(len(val)),
+    res = {'fold': FOLD, 'train_rows': int(len(sub)), 'val_rows': int(len(val)), 'epochs': args.epochs,
+           'state_format': args.state_format,
            'v8_val_auc_zones': roc_auc_score(yv, v8_val), 'wide_val_auc': roc_auc_score(yv, wide_oof[val]),
            'runs': {}}
     best, best_auc = None, -1
-    for run in RUNS:
+    for run in runs:
         f_val, f_test = work / f'{run}_val.npy', work / f'{run}_test.npy'
         if not (f_val.is_file() and f_test.is_file()):
             res['runs'][run] = {'error': 'no predictions'}
@@ -202,7 +220,7 @@ def worker(args):
     from safetensors.torch import load_file
     from laya.common import QTYPES, build_model, proper_reward
 
-    run, alpha = args.worker, RUNS[args.worker]
+    run, alpha = args.worker, int(args.worker[1:]) / 100
     work = args.output / 'pilot'
     meta = json.load(open(work / 'meta.json'))
     markers, pad_id = meta['markers'], meta['pad_id']
@@ -308,7 +326,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--input', type=Path, default=Path('/kaggle/input'))
     ap.add_argument('--output', type=Path, default=Path('/kaggle/working'))
-    ap.add_argument('--worker', choices=sorted(RUNS))
+    ap.add_argument('--worker')
+    ap.add_argument('--alphas', type=float, nargs='*', default=None)
+    ap.add_argument('--state-format', choices=('json', 'compact'), default='json')
     ap.add_argument('--train-rows', type=int, default=100000)
     ap.add_argument('--epochs', type=int, default=1)
     ap.add_argument('--micro-batch', type=int, default=32)

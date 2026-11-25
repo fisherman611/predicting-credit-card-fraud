@@ -10,6 +10,9 @@ from pathlib import Path
 
 ap = argparse.ArgumentParser()
 ap.add_argument('output', type=Path)
+ap.add_argument('--slug', default='s6e11-v10-laya-pilot')
+ap.add_argument('--title', default='S6E11 V10 Laya Pilot')
+ap.add_argument('--args', default='', help='extra arguments for laya_pilot.py')
 args = ap.parse_args()
 args.output.mkdir(parents=True, exist_ok=True)
 src = (Path(__file__).resolve().parent / 'laya_pilot.py').read_text()
@@ -19,10 +22,10 @@ launcher = (
     f'SRC = {src!r}\n'
     "path = Path('/kaggle/working/laya_pilot.py')\n"
     'path.write_text(SRC)\n'
-    'subprocess.run([sys.executable, str(path)], check=True)\n'
+    f'subprocess.run([sys.executable, str(path)] + {args.args.split()!r}, check=True)\n'
 )
 (args.output / 'launcher.py').write_text(launcher)
-meta = {'id': 'huthnhlng/s6e11-v10-laya-pilot', 'title': 'S6E11 V10 Laya Pilot', 'code_file': 'launcher.py',
+meta = {'id': 'huthnhlng/' + args.slug, 'title': args.title, 'code_file': 'launcher.py',
         'language': 'python', 'kernel_type': 'script', 'is_private': True, 'enable_gpu': True,
         'enable_internet': True, 'machine_shape': 'NvidiaTeslaT4',
         'competition_sources': ['playground-series-s6e11'],
