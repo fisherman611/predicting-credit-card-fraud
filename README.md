@@ -595,3 +595,19 @@ Before running this, two cheap checks were made on fold 0:
    Default is {Step AB, 50/50 mean}. The 50/50 mean keeps most of the public lead and has half of its exposure on the CV-best stack.
 2. **Fold-honest pseudo-labels (B):** in fold k, a model trained on that fold's fit rows labels the confident test tails. The strongest GBDT member is then retrained on fit rows plus pseudo-rows. It enters v8 only if it wins on at least 4 of 5 folds. One GPU kernel; dropped if fold 0 is flat.
 3. **Stop rule:** any idea that does not move fold 0 by at least +1·10⁻⁴ is dropped. That is the level at which a change can show on private.
+
+**Submissions on 26/11** (the public top-100 cutoff in the 26/11 leaderboard snapshot is 0.95687):
+
+| File | Submission | Public |
+| --- | --- | --- |
+| 50% Step AB + 50% v8 | 58919812 | 0.95511 |
+| goodpjw2008 Board Model + RealMLP, step AG | 58919957 | 0.95687 |
+| 75% step AG + 25% v8 | 58919962 | 0.95646 |
+| 50% step AG + 50% v8 | 58919967 | 0.95576 |
+| Dennis rank fusion, four refinements | 58920031 | 0.95688 |
+| monya1 zero-fraud zones + rank extrapolation | 58920036 | **0.95700** |
+| 75% monya1 + 25% v8 | 58920088 | 0.95677 |
+
+All high-scoring files are public notebook outputs from the same ladder (Spearman ≥ 0.9989 with step AG). None of them comes with OOF predictions, so their lead over v8 cannot be checked on train. 0.95700 would be about rank 57–63 in that snapshot.
+
+**Final pair:** monya1 (58920036) for the public ladder, plus 75% monya1 + 25% v8 (58920088) as the private hedge. The hedge gives up 0.00023 public and puts a quarter of its weight on the CV-best stack.
