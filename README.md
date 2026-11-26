@@ -576,3 +576,22 @@ Before running this, two cheap checks were made on fold 0:
 **Public check:** `v8_plus_qwen_f0.csv` (v8 + 0.05·s) scores 0.95351 public, against 0.95347 for v8 (+4·10⁻⁵). That is inside public-LB noise.
 
 **Decision:** v11 stops here. Running folds 1–4 for Qwen would cost about 10 GPU-hours for an expected change of about 10⁻⁶. All four ways tried of adding a model on top of v8 (raw-feature LightGBM residual, public GPT-2 log-probs, Laya residual, Qwen residual) come out empty, so v8 already uses what these row texts carry.
+
+## V12: strategy for the last days (final selection first)
+
+**Facts measured on 26/11:**
+
+- **Public noise:** on 60k-row random subsets of the train OOF (about the size of a 20% public split), a single model's AUC has an SD of 0.0030. For two models whose ranks have Spearman 0.986 (Step AB vs v8 on test), the SD of their AUC difference is about 0.0006. Step AB's +0.0022 over v8 is about 3.5 SD: too large to be pure split noise, but Step AB comes from a public-LB ladder, so part of it is selection.
+- **Group shifts do not explain the gap:** regressing Step AB's rank-logit on v8 plus group dummies (CVV > 0, disputes, six flags) finds shifts of at most ±0.1 logit. The difference is row-level, not group-level.
+- **Probe:** the 50/50 rank mean of Step AB and v8 (58919812) scores 0.95511 public. That is 0.0005 above the midpoint of the two and keeps about 75% of Step AB's lead.
+
+**Plan:**
+
+1. **Final pair (A):** compare three candidate pairs by public score and by how much each loses if Step AB's lead is overfit:
+   - {Step AB, v8}
+   - {Step AB, 50/50 mean}
+   - {Step AB, 25/75 mean}
+
+   Default is {Step AB, 50/50 mean}. The 50/50 mean keeps most of the public lead and has half of its exposure on the CV-best stack.
+2. **Fold-honest pseudo-labels (B):** in fold k, a model trained on that fold's fit rows labels the confident test tails. The strongest GBDT member is then retrained on fit rows plus pseudo-rows. It enters v8 only if it wins on at least 4 of 5 folds. One GPU kernel; dropped if fold 0 is flat.
+3. **Stop rule:** any idea that does not move fold 0 by at least +1·10⁻⁴ is dropped. That is the level at which a change can show on private.
