@@ -611,3 +611,35 @@ Before running this, two cheap checks were made on fold 0:
 All high-scoring files are public notebook outputs from the same ladder (Spearman ≥ 0.9989 with step AG). None of them comes with OOF predictions, so their lead over v8 cannot be checked on train. 0.95700 would be about rank 57–63 in that snapshot.
 
 **Final pair:** monya1 (58920036) for the public ladder, plus 75% monya1 + 25% v8 (58920088) as the private hedge. The hedge gives up 0.00023 public and puts a quarter of its weight on the CV-best stack.
+
+### V12b: how much of the ladder generalises (26/11)
+
+goodpjw2008's pinned-inputs dataset documents the late ladder steps. Steps AD, AE and AG follow "board directions": shifts over the test rows fitted offline on 238–244 files with a known public score. They are fitted to the public scores.
+
+**Checks.** Each check used test rows only, with no train labels. `board_direction_*`, AG − AE, and each ladder file minus v8 were fitted from the raw features plus v8, then the fitted part was applied to the train OOF.
+
+| Move | R² on held-out test rows | Effect on v8 OOF |
+| --- | --- | --- |
+| board direction AG | 0.05 | lower at every scale |
+| board direction AE | 0.14 | lower at every scale |
+| AG − AE | 0.01 | lower at every scale |
+| monya1 / AG / CV-led file − v8 | 0.52–0.60 | +2–3·10⁻⁴ (4–5 of 5 folds) |
+
+- **Board directions:** they are nearly unpredictable from the features, and even the leak-prone transfer described below does not make them help. They look like public-only moves, so the 0.0012 that AG adds on public should not carry to private.
+- **Why the +2–3·10⁻⁴ cannot be trusted:** the same transfer leaks train labels. A full-train LightGBM with no new signal (OOF 0.9387, which lowers v8 when used honestly) appears to gain +0.0058 when put through it.
+
+**Other checks.**
+
+- **New honest OOF members:** none adds to v8; the best is +7·10⁻⁶. The members were the seven weni BPE / RealMLP / TabM models, DavutKursun's XGBoost-GLM bag and yekenot's TabM.
+- **CV-led base:** goodpjw2008's step A is the CV-led file that comes before the public-fitted steps. Neither it nor v8 was fitted to public, so their public scores are honest estimates.
+
+| File | Submission | Public |
+| --- | --- | --- |
+| CV-led step A | 58921390 | 0.95445 |
+| 50% CV-led + 50% v8 | 58921394 | 0.95427 |
+| CV-led + four zero-fraud zones | 58921448 | 0.95447 |
+
+**Final pair (revised).** Private takes the better of the two finals, so they should cover different scenarios:
+
+- **monya1 (58920036, 0.95700):** wins if the ladder generalises.
+- **CV-led + zones (58921448, 0.95447):** the best file not fitted to public, which wins if the ladder does not generalise.
