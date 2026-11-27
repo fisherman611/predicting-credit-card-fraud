@@ -835,3 +835,25 @@ Gains are over the honest base (fake public / fake private), means of 5 seeds:
 - **For the finals:**
   - The private-first final should be v8 or a 25/75 merge of the ladder top with v8.
   - The ladder file covers the other scenario, in which the real ladder holds signal the simulation lacks.
+
+### V13 more checks (28/11)
+
+**Wider zero-fraud zones fail** (`kaggle/v13/zones2.py`, nested CV). Depth 6–10 decision trees fitted on the fit rows outside the known zones gave candidate leaves. A leaf was kept only if it had no fraud in the fit rows and none in an inner holdout.
+
+| Minimum leaf size | Mean gain | Folds up |
+| --- | ---: | ---: |
+| 300 | −0.00117 | 0/5 |
+| 1000 | −0.00007 | 3/5 |
+| 3000 | −0.00005 | 1/5 |
+
+Each fraud missed inside a pushed-down zone costs more than the zone gains.
+
+**Merge weight sweep** (sim v3: 3 seeds × noise 0.25/0.5/1.0 × both scenarios; [Kaggle run](https://www.kaggle.com/code/huthnhlng/s6e11-v13-simulated-leaderboard-v3), `kaggle/v13/sim2_*_noise*.json`). The table gives the fake private change of w × ladder top + (1 − w) × base, relative to the base, in units of 10⁻⁴:
+
+| w | 0.1 | 0.2 | 0.25 | 0.3 | 0.4 | 0.5 | 0.75 | 1 (top) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| worst case | −0.4 | −1.3 | −1.9 | −2.6 | −4.5 | −6.8 | −14.9 | −25.9 |
+| best case | +0.0 | −0.3 | −0.5 | −0.8 | −1.7 | −2.9 | −7.0 | −13.0 |
+
+- **The private loss grows roughly with w².** Weights up to 0.2 cost at most 1.3·10⁻⁴ even when the ladder carries no real signal, while keeping 0.5–0.8·10⁻³ of fake public.
+- **The private-first final becomes 20% daoviet + 80% v8 + zones** (`dao20_v8.csv`), replacing 50% CV-led + 50% v8. CV-led itself descends from a ladder file.
