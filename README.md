@@ -683,3 +683,13 @@ The CV-led file starts from a public-ladder file (the 0.95442 file), so its +0.0
 | File | Submission | Public |
 | --- | --- | --- |
 | 50% CV-led + 50% v8 + zones | 58979741 | 0.95427 |
+
+**Kaggle rebuild.** `kaggle/v12/final.py` (bundled by `kaggle/v12/bundle.py`) rebuilds the final files on Kaggle from public inputs, with no training. The kernel is `huthnhlng/s6e11-v12-final-files`, a CPU script, and its output is:
+
+- `v8.csv`
+- `cv_led_zones.csv`
+- `cvled50_v8_zones.csv`, also written as `submission.csv`
+- `ladder_monya1.csv`
+- `final_v12.json`: SHA-256 checksums and Spearman correlations with the ladder file
+
+Locally the rebuilt files rank identically to submissions 58847974 (v8), 58921448 (CV-led + zones) and 58979741 (50/50 + zones). The analysis scripts of this round are also in `kaggle/v12/`.
