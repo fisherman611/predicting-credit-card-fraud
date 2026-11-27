@@ -53,6 +53,12 @@ for seed in range(args.seeds):
             for rms in (0.01, 0.03, 0.06):
                 r = r0 + rms * g / np.sqrt(np.mean(g ** 2))
                 out[f'board tau{tau} lam{lam} rms{rms}'] = (float(auc(r, pub) - s[ref]), float(auc(r, ~pub) - auc(r0, ~pub)))
+    for wb in (0.25, 0.5, 0.75):                              # merge the ladder top with the robust (unclimbed) base
+        r = wb * r0 + (1 - wb) * base
+        out[f'merge {wb:g} top + {1 - wb:g} base'] = (float(auc(r, pub) - s[ref]), float(auc(r, ~pub) - auc(r0, ~pub)))
+    top3 = R[np.argsort(s)[-3:]].mean(0)                     # fusion of the three best scored files
+    out['fusion top3'] = (float(auc(top3, pub) - s[ref]), float(auc(top3, ~pub) - auc(r0, ~pub)))
+    out['base vs top (private)'] = float(auc(base, ~pub) - auc(r0, ~pub))
     sec = int(np.argsort(s)[-2])
     for k in (0.5, 1.0):
         r = r0 + k * (r0 - R[sec])

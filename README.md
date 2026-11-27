@@ -787,3 +787,20 @@ Results are means over 5 seeds (`kaggle/v13/sim_results.json`):
 - **Board model:** can raise public, but on the real board the same model lost 0.00021.
 - **Private cost:** every method that gains public loses private, by roughly 0.2–0.8 of its public gain.
 - **Implication:** climbing the public board costs private score, and the final ranking is private. Keep the robust final (58979741) as one of the two finals. Every extra public step taken by the ladder final lowers its expected private score.
+
+**Merging, same simulation** (5 seeds, local run of the updated `sim.py`). Gains are relative to the ladder's top file:
+
+| Merge | Fake public | Fake private |
+| --- | ---: | ---: |
+| 75% ladder top + 25% unclimbed base | −0.00003 | +0.00048 |
+| 50% + 50% | −0.00024 | +0.00079 |
+| 25% + 75% | −0.00063 | +0.00093 |
+| unclimbed base alone | −0.00118 | +0.00090 |
+| fusion of the three best scored files | −0.00001 | +0.00004 |
+
+**Reading.**
+
+- **Merging works for private:** mixing a climbed file with an unclimbed one removes part of the public-only noise.
+- **Public punishes it:** the merge waters down exactly the part public rewards. This matches the real board, where every merge with v8 or CV-led scored lower than its ladder parent.
+- **Fusing close ladder files does nothing:** they share the same public fit.
+- **For the finals:** the 50/50 robust final (58979741) is the merge the simulation supports. In this simulation the ladder moves carry no real signal, so it favours the base. If the real ladder holds some signal, 50/50 sits between the two cases.
