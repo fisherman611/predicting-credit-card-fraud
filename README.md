@@ -669,3 +669,17 @@ goodpjw2008's pinned-inputs dataset documents the late ladder steps. Steps AD, A
 3. **Same-scenario finals:** the first final pair (monya1 and 75% monya1 + 25% v8) bet on one scenario. It was replaced by a pair that covers both.
 4. **Leak-prone transfer:** a direction fitted on test and applied to the train OOF looked like +2–3·10⁻⁴. A control with no new signal showed the transfer leaks (+0.0058). Any test-to-train transfer now needs that control.
 5. **Untested environment:** the Qwen job lost one kernel run (about 2.5 h) to the torchao/peft clash on Kaggle's image. A kernel now gets a one-minute import smoke test before the long run.
+
+**Three model-side checks on 27/11**, all fold-honest on v8 OOF; none passes the +1·10⁻⁴ bar:
+
+| Check | Result |
+| --- | --- |
+| LightGBM residual on digit features (`init_score` = Platt v8) | early stopping halts at 1–5 trees; mean −1·10⁻⁶ |
+| Nearest rows in the 20k original dataset (labels of 1/5/20 neighbours, distances) | neighbour label alone AUC 0.67; as a residual −6·10⁻⁶ |
+| CV-led's segment shifts vs v8 (round cents up, CVV = 1 down) | +5·10⁻⁶, −2·10⁻⁵, −3·10⁻⁵ |
+
+The CV-led file starts from a public-ladder file (the 0.95442 file), so its +0.001 public over v8 may also be partly fitted to public.
+
+| File | Submission | Public |
+| --- | --- | --- |
+| 50% CV-led + 50% v8 + zones | 58979741 | 0.95427 |
