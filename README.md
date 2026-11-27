@@ -804,3 +804,34 @@ Results are means over 5 seeds (`kaggle/v13/sim_results.json`):
 - **Public punishes it:** the merge waters down exactly the part public rewards. This matches the real board, where every merge with v8 or CV-led scored lower than its ladder parent.
 - **Fusing close ladder files does nothing:** they share the same public fit.
 - **For the finals:** the 50/50 robust final (58979741) is the merge the simulation supports. In this simulation the ladder moves carry no real signal, so it favours the base. If the real ladder holds some signal, 50/50 sits between the two cases.
+
+### V13 simulated leaderboard v2 (`kaggle/v13/sim2.py`, [Kaggle run](https://www.kaggle.com/code/huthnhlng/s6e11-v13-simulated-leaderboard-v2))
+
+**Setup.** The fake test is the same as before; the honest base is v8's OOF.
+
+- **Ladder:** it makes 90 tries and keeps those that raise fake public, about 28 kept steps in the end. There are two kinds of try:
+  - a step along a real member difference, plus row noise (sd 0.5 of the move), which stands for public-only fitting;
+  - every 10th try, a kernel-ridge board step fitted on all scored tries.
+- **Scenarios:**
+  - `v8`: the base is v8, so the ladder has no extra model signal to find.
+  - `wide`: the base is the wide stack only, and Davut's stack is a member the ladder can move toward.
+
+Gains are over the honest base (fake public / fake private), means of 5 seeds:
+
+| Final | `v8` scenario | `wide` scenario |
+| --- | ---: | ---: |
+| ladder top | +0.00168 / **−0.00211** | +0.00162 / **−0.00160** |
+| 75% top + 25% base | +0.00166 / −0.00120 | +0.00154 / −0.00089 |
+| 50% + 50% | +0.00136 / −0.00054 | +0.00124 / −0.00038 |
+| 25% + 75% | +0.00081 / −0.00014 | +0.00073 / −0.00009 |
+| fusion of the 3 best | +0.00162 / −0.00196 | +0.00156 / −0.00146 |
+| base + member-span projection of (top − base) | +0.00076 / −0.00109 | +0.00085 / −0.00077 |
+
+**Reading.**
+
+- **Nothing beats the honest base on private.** That holds even when there is a real member signal to find (`wide`): the selection on public noise outweighs it.
+- **Merging is the best compromise:** 25% top + 75% base keeps half the public gain and loses only about 1·10⁻⁴ private.
+- **Projection is weaker:** keeping only the member-explainable part of the move removes about half the private loss, which is less than merging does.
+- **For the finals:**
+  - The private-first final should be v8 or a 25/75 merge of the ladder top with v8.
+  - The ladder file covers the other scenario, in which the real ladder holds signal the simulation lacks.
