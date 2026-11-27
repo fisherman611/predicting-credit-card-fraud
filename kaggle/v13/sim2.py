@@ -60,7 +60,7 @@ for seed in range(args.seeds):
     R, s = np.array(R), np.array(s); top = R[int(np.argmax(s))]
     Lc = L - L.mean(1, keepdims=True); D = top - base
     cands = {'top': top}
-    for w in (0.25, 0.5, 0.75): cands[f'merge {w:g} top'] = w * top + (1 - w) * base
+    for w in (0.1, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75): cands[f'merge {w:g} top'] = w * top + (1 - w) * base
     cands['fusion top3'] = R[np.argsort(s)[-3:]].mean(0)
     for alpha in (1e-2, 1.0, 100.0):
         beta = np.linalg.solve(Lc @ Lc.T / Lc.shape[1] + alpha / Lc.shape[1] * np.eye(len(L)), Lc @ D / Lc.shape[1])
