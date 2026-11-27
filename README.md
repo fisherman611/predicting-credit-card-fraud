@@ -761,3 +761,29 @@ Extrapolating along the ladder saturates within +1·10⁻⁵ of the source file,
 2. **Local board model:** fit only on the ladder family (rms distance < 0.15), use the bank with failures included, and use moves the size of the gaps between scored files (rms 0.05). Probe 2–3 step sizes per direction and stop a direction after one loss.
 3. **Latent public labels:** fit soft labels on test rows. The prior is the reference file's fraud rates. The labels are fitted so that a smooth (sigmoid pairwise) AUC reproduces the known scores. The candidate is then the reference reranked by the posterior. This is the method behind AG's +0.0012.
 4. **Finals:** the best public file, plus 58979741 as the robust final.
+
+### V13 simulated leaderboard (`kaggle/v13/sim.py`, [Kaggle run](https://www.kaggle.com/code/huthnhlng/s6e11-v13-simulated-leaderboard))
+
+**Setup.** The fake leaderboard is built from labelled train rows: a fake test set of 300k train rows, with a random 20% as fake public and the rest as fake private. Files are made from 33 real OOF members (logit ranks).
+
+- **Bank:** a greedy ladder tries 60 small moves. Each move is a member difference plus noise. A move is kept when it raises fake public, and every try is scored, as in the real bank.
+- **Methods:** each one then steps from the bank's best file, and its gain is measured on both splits.
+
+Results are means over 5 seeds (`kaggle/v13/sim_results.json`):
+
+| Method | Fake public | Fake private |
+| --- | ---: | ---: |
+| Greedy public ladder (60 tries) | +0.00118 | **−0.00090** |
+| Board model, τ 0.2, λ 1e-4, rms 0.01 | +0.00010 | −0.00002 |
+| Board model, τ 0.2, λ 1e-4, rms 0.03 | +0.00028 | −0.00009 |
+| Board model, τ 0.2, λ 1e-4, rms 0.06 | +0.00051 | −0.00022 |
+| Board model, τ 0.05, λ 1e-2, rms 0.06 | +0.00003 | −0.00053 |
+| Extrapolate 0.5 along the last move | −0.00001 | −0.00004 |
+| Extrapolate 1.0 | −0.00005 | −0.00009 |
+
+**Reading.**
+
+- **Extrapolation:** matches the real probes. Rank extrapolation from the top file stays within ±1·10⁻⁵ on public.
+- **Board model:** can raise public, but on the real board the same model lost 0.00021.
+- **Private cost:** every method that gains public loses private, by roughly 0.2–0.8 of its public gain.
+- **Implication:** climbing the public board costs private score, and the final ranking is private. Keep the robust final (58979741) as one of the two finals. Every extra public step taken by the ladder final lowers its expected private score.
