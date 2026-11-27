@@ -643,3 +643,29 @@ goodpjw2008's pinned-inputs dataset documents the late ladder steps. Steps AD, A
 
 - **monya1 (58920036, 0.95700):** wins if the ladder generalises.
 - **CV-led + zones (58921448, 0.95447):** the best file not fitted to public, which wins if the ladder does not generalise.
+
+## V12c: error analysis and lessons (27/11)
+
+**Where v8 loses AUC** (OOF 0.95272; `err.py` attributes each misordered fraud–legit pair to both rows):
+
+- **Concentration:** the 10% worst-ranked frauds carry 63% of the loss, and the worst 20% carry 83%. These hard frauds have a median rank at the 74th percentile.
+- **They look like legit rows:** CVV retry 0.09 (legit 0.08, all frauds 0.56), new merchant 19% (legit 15%, all frauds 43%), merchant risk 38.8 (legit 35.0, all frauds 47.4), and every flag at the legit rate. Most of the remaining loss is overlap the features cannot separate.
+- **Segments with the most excess loss:**
+
+  | Segment | Share of loss | Share of rows |
+  | --- | ---: | ---: |
+  | `is_new_merchant` | 26% | 15% |
+  | `cvv_retry_count = 1` | 19% | 8% |
+  | top-eighth merchant risk | 23% | 12.5% |
+  | `auth_method = No Authentication` | 20% | 10% |
+  | top-eighth velocity | 22% | 12.5% |
+
+  These are the mid-risk mixes where frauds and legit rows overlap. Earlier per-segment models (v2 CVV, coarse-to-fine, v6 base models with gates) did not beat the stack there.
+
+**Process mistakes and what changed:**
+
+1. **Saturated stack:** v9–v11 kept adding members to a stack that was already full; each gained less than 1·10⁻⁵. Rule: a new direction needs at least +1·10⁻⁴ on fold 0 or it stops.
+2. **Repeated idea:** the V12 plan proposed pseudo-labels, which V8 had already tested (−0.00016, 0/3 folds). It is dropped.
+3. **Same-scenario finals:** the first final pair (monya1 and 75% monya1 + 25% v8) bet on one scenario. It was replaced by a pair that covers both.
+4. **Leak-prone transfer:** a direction fitted on test and applied to the train OOF looked like +2–3·10⁻⁴. A control with no new signal showed the transfer leaks (+0.0058). Any test-to-train transfer now needs that control.
+5. **Untested environment:** the Qwen job lost one kernel run (about 2.5 h) to the torchao/peft clash on Kaggle's image. A kernel now gets a one-minute import smoke test before the long run.
