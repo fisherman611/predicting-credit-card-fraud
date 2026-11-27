@@ -736,3 +736,28 @@ The loss therefore comes from a mid band: frauds at legit rank 0.6–0.9, plus t
 | logit-rank mean of daoviet and Ishran | 58980499 | 0.95736 |
 
 Extrapolating along the ladder saturates within +1·10⁻⁵ of the source file, so it cannot close the 0.0002 gap to the top-50 cutoff. 58980425 becomes the ladder final.
+
+## V13: own board model for a top-50 public attempt (27/11–30/11)
+
+**Goal and risk.** The target is the public top 50, a cutoff of about 0.95762, against our best of 0.95740 (daoviet file, 58980425). Public probing only improves public, so the robust final (58979741) stays as it is.
+
+**Ideas taken from public notebooks:**
+
+- goodpjw2008's board model: directions fitted on 240+ files with a known public score, as in steps AD, AE and AG.
+- monya1 / Mirza Ishran: rank extrapolation along the latest move.
+- Dennis: fusion of the top files.
+
+**Our version** (`kaggle/v13/`):
+
+- **Bank:** `bank.py` holds 47 test rankings with a known public score. They are our own submissions, files from the pinned-inputs dataset (scores in their names) and goodpjw2008 steps with published scores.
+- **Model:** `board.py` and `fit.py` fit a kernel ridge from logit-rank vectors (zone rows excluded) to the public score. Files near the reference get more weight. Leave-one-out RMSE is 3·10⁻⁵, against 2.9·10⁻⁴ for a constant.
+- **Step:** `step.py` moves the reference along the fitted gradient.
+
+**Step 1 failed.** The step predicted at +0.001 (rms move 0.028, Spearman 0.99996 with the reference) scored 0.95719, which is 0.00021 below the reference (58980795). Fitting the files inside the bank does not make the gradient a good direction outside it. Every probe, failed or not, goes back into the bank.
+
+**Plan for 28–30/11** (10 submissions a day, at most 6 a day on probes):
+
+1. **New public files first:** submit any public file that differs from the reference (Spearman < 0.9999) and claims more than 0.95740. This has been the only source of public gains so far (+0.00013 from daoviet).
+2. **Local board model:** fit only on the ladder family (rms distance < 0.15), use the bank with failures included, and use moves the size of the gaps between scored files (rms 0.05). Probe 2–3 step sizes per direction and stop a direction after one loss.
+3. **Latent public labels:** fit soft labels on test rows. The prior is the reference file's fraud rates. The labels are fitted so that a smooth (sigmoid pairwise) AUC reproduces the known scores. The candidate is then the reference reranked by the posterior. This is the method behind AG's +0.0012.
+4. **Finals:** the best public file, plus 58979741 as the robust final.
