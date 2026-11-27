@@ -702,3 +702,25 @@ Locally the rebuilt files rank identically to submissions 58847974 (v8), 5892144
 | Mirza Ishran "Rank corrections and risk zone" | 58980074 | **0.95727** |
 
 58980074 replaces monya1 as the ladder final. The monya1 notebook has also been re-run since 26/11 (a new version with different ranks), so the `ladder_monya1.csv` in the Kaggle rebuild is no longer the scored 0.95700 file.
+
+### V12d: error analysis, part 2 (`kaggle/v12/err2.py`, `err3.py`, `err4.py`)
+
+**Every member misses the same frauds.** "Hard frauds" are the worst 10% of frauds under v8 (1,168 rows, median v8 rank 0.738). The 36 OOF members cover GBDT bags, GLM, EBM, RealMLP, TabM, BPE CatBoost/LightGBM and both stacks. Each member puts these frauds at a median percentile between 0.73 and 0.74.
+
+- **Rescue rate:** 6.9% of hard frauds land in some member's top 10%. For legit rows at the same v8 rank the rate is 2.9%, so the excess is only about 45 frauds. No member holds a signal the stack misses.
+
+**These frauds are not label noise in the simple sense.**
+
+- **Spread under the legit distribution:** 86% of frauds score above 90% of legit rows, and only 2% score below the legit median. If a share π of frauds were spread exactly like legit rows, the counts below the legit median would give π ≤ 0.02, an AUC ceiling of about 0.99.
+- **The top of the ranking is clean:** the top 0.1% by v8 is 98% fraud and the top 1% is 68% fraud.
+- **No duplicates:** train has no repeated feature vectors, and so no conflicting labels.
+
+The loss therefore comes from a mid band: frauds at legit rank 0.6–0.9, plus the ordering inside the top decile, where about 70k legit rows mix with 10k frauds.
+
+**There is almost no local signal in that band.**
+
+- **Neighbour labels:** in standardized feature space, hard frauds at v8 rank 0.60–0.85 have a 1.05% fraud rate among their 10 nearest neighbours. Legit rows in the same band have 0.80%.
+- **Explained by rank:** most of that gap comes from the neighbours' own higher v8 ranks (0.62 vs 0.59).
+- **No two-way feature splits them:** the highest-scored legit rows and the highest-scored frauds have nearly the same feature means. Frauds just carry more of the flags (foreign 31% vs 16%, IP mismatch 38% vs 19%).
+
+**Conclusion.** With these features, the remaining loss is overlap shared by every model family tried. A further gain would need information that is not in the features. That matches the empty residual, digit, nearest-original-row and member checks, and it is why the last days go to the choice of finals.
