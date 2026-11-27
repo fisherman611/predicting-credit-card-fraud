@@ -724,3 +724,15 @@ The loss therefore comes from a mid band: frauds at legit rank 0.6–0.9, plus t
 - **No two-way feature splits them:** the highest-scored legit rows and the highest-scored frauds have nearly the same feature means. Frauds just carry more of the flags (foreign 31% vs 16%, IP mismatch 38% vs 19%).
 
 **Conclusion.** With these features, the remaining loss is overlap shared by every model family tried. A further gain would need information that is not in the features. That matches the empty residual, digit, nearest-original-row and member checks, and it is why the last days go to the choice of finals.
+
+**Public probes for a top-50 attempt (27/11).** In the 27/11 leaderboard snapshot, the top-50 cutoff is 0.95762.
+
+| File | Submission | Public |
+| --- | --- | --- |
+| daoviet "On the journey to your first top 100" (public notebook) | 58980425 | **0.95740** |
+| Ishran + 0.5 × (Ishran − step AG) | 58980458 | 0.95728 |
+| Ishran + 1.0 × (Ishran − step AG) | 58980461 | 0.95716 |
+| daoviet + 0.5 × (daoviet − Ishran) | 58980498 | 0.95733 |
+| logit-rank mean of daoviet and Ishran | 58980499 | 0.95736 |
+
+Extrapolating along the ladder saturates within +1·10⁻⁵ of the source file, so it cannot close the 0.0002 gap to the top-50 cutoff. 58980425 becomes the ladder final.
