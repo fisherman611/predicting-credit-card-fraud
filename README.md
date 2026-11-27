@@ -857,3 +857,7 @@ Each fraud missed inside a pushed-down zone costs more than the zone gains.
 
 - **The private loss grows roughly with w².** Weights up to 0.2 cost at most 1.3·10⁻⁴ even when the ladder carries no real signal, while keeping 0.5–0.8·10⁻³ of fake public.
 - **The private-first final becomes 20% daoviet + 80% v8 + zones** (`dao20_v8.csv`), replacing 50% CV-led + 50% v8. CV-led itself descends from a ladder file.
+
+| File | Submission | Public |
+| --- | --- | --- |
+| 20% daoviet + 80% v8 + zones (private-first final) | 58984403 | 0.95475 |
