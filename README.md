@@ -693,3 +693,12 @@ The CV-led file starts from a public-ladder file (the 0.95442 file), so its +0.0
 - `final_v12.json`: SHA-256 checksums and Spearman correlations with the ladder file
 
 Locally the rebuilt files rank identically to submissions 58847974 (v8), 58921448 (CV-led + zones) and 58979741 (50/50 + zones). The analysis scripts of this round are also in `kaggle/v12/`.
+
+**Ladder refresh (27/11):** two new public files are almost the same file (Spearman 0.99999995 with each other):
+
+| File | Submission | Public |
+| --- | --- | --- |
+| Rishabh Bafna "Beginner to SOTA guide" | 58980072 | 0.95726 |
+| Mirza Ishran "Rank corrections and risk zone" | 58980074 | **0.95727** |
+
+58980074 replaces monya1 as the ladder final. The monya1 notebook has also been re-run since 26/11 (a new version with different ranks), so the `ladder_monya1.csv` in the Kaggle rebuild is no longer the scored 0.95700 file.
