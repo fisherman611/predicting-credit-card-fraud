@@ -926,3 +926,19 @@ Each fraud missed inside a pushed-down zone costs more than the zone gains.
 - **Per submission,** block probing gains about +2·10⁻⁵ of public. Further local board steps gain nothing.
 - **Block move size:** larger moves (d ≥ 1) cost far more private for little extra public.
 - **Private hedge:** the private-first final (priv10) does not depend on this ladder.
+
+### V13 sim v6: which blocks to probe (`kaggle/v13/sim6.py`, `sim6_noise*.json`, `probe_board.py`)
+
+**Setup.** The fake board is the same as in sim v4: a 90-try ladder plus 20 far files, scores rounded to 5 decimals. Each run starts from the bank's best file and uses blocks of 1000 rows raised by +0.5. Results cover 16 seeds at each of three noise levels. Figures are the fake-public change versus the start (×10⁻⁴); fake private is in brackets.
+
+| Method | 4 submissions | 14 submissions | 24 submissions |
+| --- | ---: | ---: | ---: |
+| A random blocks (sim v5 plan) | +0.7–1.0 (−0.2) | +2.3–2.9 (−0.7 to −0.9) | +4.3–5.0 (−1.2 to −1.6) |
+| **B blocks ordered by the local board gradient** | **+1.1–1.4** (−0.2 to −0.5) | **+3.6–4.0** (−1.0 to −1.3) | **+6.0–6.7** (−1.6 to −2.1) |
+| C random blocks ordered by summed gradient | +0.4–0.6 | +2.0–3.0 | +4.2–5.0 |
+| D B, refitting the board after every probe | +0.9–1.2 | +3.5–4.2 | +5.5–6.3 |
+| E B with blocks of 500 | +0.6–0.9 | +2.6–2.8 | +4.3 |
+
+**Paired B − A.** The gain over random blocks is +0.3–0.5 at 4 submissions, +1.0–1.3 at 14 (B ahead in 69–88% of seeds) and +1.3–2.1 at 24.
+
+**Plan.** B is the plan. `probe_board.py order` fits the gradient once on the real bank: 10 files within rms 0.1 of the 0.95765 file. It then sorts the 179,990 band rows and saves the block order.
