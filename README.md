@@ -953,3 +953,9 @@ Each fraud missed inside a pushed-down zone costs more than the zone gains.
 | block 3 | 59034859 | **0.95790** | yes |
 
 The four probes gained +2.5·10⁻⁴. The simulation expected +1.1–1.4·10⁻⁴ for 4 submissions.
+
+**Follow-up sim** (`sim6b_noise*.json`, 16 seeds, noise 0.25 and 1.0). Both variants were compared with plain B:
+- **F (raise each accepted block once more):** public matches B, from −0.35 to +0.41·10⁻⁴. Private is about twice as bad, −2.9 to −3.4·10⁻⁴ after 24 submissions.
+- **G (split each accepted block into halves):** public is lower than B, by −0.4 to −0.8·10⁻⁴.
+
+Plain B stays the plan for 29–30/11.
