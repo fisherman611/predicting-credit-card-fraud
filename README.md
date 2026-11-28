@@ -892,3 +892,20 @@ Each fraud missed inside a pushed-down zone costs more than the zone gains.
 - **Step 1:** gained +3·10⁻⁵, inside the simulation's range.
 - **Step 2:** gained nothing, so the local direction is used up. This method stops here.
 - **Private cost:** the simulation puts it at about −0.7·10⁻⁴ per step.
+
+### V13 private-first finals rebuilt from the 0.95765 file (`kaggle/v13/merge_private.py`)
+
+**How the files are built.** Each file is w·lr(local step 1, public 0.95765) + (1−w)·lr(v8), with the zero-fraud zones at the bottom. The same recipe rebuilt from daoviet reproduces `dao20_v8.csv` (Spearman 0.99999).
+
+**Expected scores.** The fake-board numbers come from sim v2/v3: 18 runs over the v8/wide scenarios and three noise levels. The public estimate scales the real dao20 result, where 20% of the ladder gain kept 31% of its public gain.
+
+| w | Fake public vs v8 | Fake private vs v8 | Expected real public |
+| --- | ---: | ---: | ---: |
+| 0.10 | +2.7 to +4.2·10⁻⁴ | +0.0 to −0.4·10⁻⁴ | about 0.9541 |
+| 0.15 | n/a (not simulated) | n/a (between 0.10 and 0.20) | about 0.9544 |
+| 0.20 | +5.1 to +7.9·10⁻⁴ | −0.3 to −1.3·10⁻⁴ | about 0.9548 |
+| 0.30 | +7.2 to +11.1·10⁻⁴ | −0.9 to −2.6·10⁻⁴ | about 0.9552 |
+
+**Caveat.** The simulation treats every ladder step as pure public fitting, so its private optimum is w = 0. If the real ladder carries some true signal, from the community models it started from, a small w gains on private. The range w = 0.1–0.2 hedges between the two cases.
+
+**Submissions.** None of these files has been submitted. A file must be submitted once before it can be chosen as a final.
