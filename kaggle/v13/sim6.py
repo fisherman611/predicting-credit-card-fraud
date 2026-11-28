@@ -70,11 +70,14 @@ for seed in range(args.seeds):
         'E board k500': [sorted_band[i * 500:(i + 1) * 500] for i in range(max(BUDGETS))],
     }
     out = {}
-    for name, blocks in list(plans.items()) + [('D adaptive', None)]:
+    for name, blocks in list(plans.items()) + [('D adaptive', None), ('F board+reboost', 'F'), ('G board+halves', 'G')]:
         x, cur_s = start.copy(), round(s0, 5); used = np.zeros(len(y), bool)
-        Rb, sb = list(R), list(s)
+        Rb, sb = list(R), list(s); queue, nxt, boosted = [], 0, set()
         for n in range(1, max(BUDGETS) + 1):
-            if blocks is None:
+            if isinstance(blocks, str):
+                if queue: b = queue.pop(0)
+                else: b = plans['B board'][nxt] if nxt < max(BUDGETS) else sorted_band[nxt * K_BLOCK:(nxt + 1) * K_BLOCK]; nxt += 1
+            elif blocks is None:
                 g = board(np.array(Rb), np.array(sb), int(np.argmax(sb))) if n > 1 else g0
                 c = band[~used[band]]; b = c[np.argsort(-g[c])][:K_BLOCK]
             else:
@@ -82,7 +85,11 @@ for seed in range(args.seeds):
             used[b] = True
             t = x.copy(); t[b] += D; sc = round(P(t), 5)
             Rb.append(t); sb.append(sc)
-            if sc > cur_s: x, cur_s = t, sc
+            if sc > cur_s:
+                x, cur_s = t, sc
+                key = (int(b[0]), len(b))
+                if blocks == 'F' and key not in boosted: boosted.add(key); queue.append(b)
+                if blocks == 'G' and len(b) >= 500: queue += [b[:len(b) // 2], b[len(b) // 2:]]
             if n in BUDGETS: out[f'{name} @{n}'] = (P(x) - s0, Q(x) - q0)
     print(seed, {k: (round(v[0] * 1e4, 2), round(v[1] * 1e4, 2)) for k, v in out.items() if k.endswith('@24')}, flush=True)
     for k, v in out.items(): summary.setdefault(k, []).append(v)
