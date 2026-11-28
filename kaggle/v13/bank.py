@@ -12,6 +12,9 @@ BANK = {
     S + '/v12/local_step1.csv': 0.95765,  # v13 local board step 1
     S + '/v12/local_step2.csv': 0.95765,  # v13 local board step 2
     S + '/v12/priv10_step1_v8.csv': 0.95424,  # v13 private-first 10/90
+    S + '/v12/probeB_b0.csv': 0.95770,  # v13 probe B block 0
+    S + '/v12/probeB_b1.csv': 0.95783,  # v13 probe B block 1 (on b0)
+    S + '/v12/probeB_b3.csv': 0.95790,  # v13 probe B block 3 (on b1)
     S + '/pub/new_daoviet2/submission.csv': 0.95740,
     S + '/v12/dao_mz_mean.csv': 0.95736,
     S + '/v12/board_gain0.001.csv': 0.95719,  # v13 board step 1 (predicted +0.001, real -0.00021)

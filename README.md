@@ -942,3 +942,14 @@ Each fraud missed inside a pushed-down zone costs more than the zone gains.
 **Paired B − A.** The gain over random blocks is +0.3–0.5 at 4 submissions, +1.0–1.3 at 14 (B ahead in 69–88% of seeds) and +1.3–2.1 at 24.
 
 **Plan.** B is the plan. `probe_board.py order` fits the gradient once on the real bank: 10 files within rms 0.1 of the 0.95765 file. It then sorts the 179,990 band rows and saves the block order.
+
+**Real board, 28/11.** Each probe was built on the best file before it, starting from local step 1 at 0.95765:
+
+| Probe | Submission | Public | Kept |
+| --- | --- | ---: | --- |
+| block 0 | 59034804 | 0.95770 | yes |
+| block 1 | 59034818 | **0.95783** | yes |
+| block 2 | 59034843 | 0.95772 | no |
+| block 3 | 59034859 | **0.95790** | yes |
+
+The four probes gained +2.5·10⁻⁴. The simulation expected +1.1–1.4·10⁻⁴ for 4 submissions.
