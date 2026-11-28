@@ -861,3 +861,11 @@ Each fraud missed inside a pushed-down zone costs more than the zone gains.
 | File | Submission | Public |
 | --- | --- | --- |
 | 20% daoviet + 80% v8 + zones (private-first final) | 58984403 | 0.95475 |
+
+**Ladder refresh (28/11).** The three new public files differ from the old daoviet file at Spearman 0.99946–0.99974.
+
+| File | Submission | Public |
+| --- | --- | --- |
+| TarunSingh931 "AG continuation alpha curve" | 59031464 | **0.95762** |
+| Mirza Ishran "Tuning step AG continuation" | 59031468 | 0.95760 |
+| daoviet (version of 27/11 14:55) | 59031470 | 0.95758 |
