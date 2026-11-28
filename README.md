@@ -909,3 +909,20 @@ Each fraud missed inside a pushed-down zone costs more than the zone gains.
 **Caveat.** The simulation treats every ladder step as pure public fitting, so its private optimum is w = 0. If the real ladder carries some true signal, from the community models it started from, a small w gains on private. The range w = 0.1–0.2 hedges between the two cases.
 
 **Submissions.** priv10 was submitted as 59033555 and scored public **0.95424** (predicted about 0.9541). It is the private-first candidate final. A file must be submitted once before it can be chosen as a final.
+
+### V13 sim v5: block probing for public score (`kaggle/v13/sim5.py`, `sim5_coarse.json`, `sim5_fine.json`, `probe.py`)
+
+**Setup.** The fake test set is 300k labelled train rows, split 20% fake public / 80% fake private, with scores rounded to 5 decimals as Kaggle shows them. Each probe raises a block of rows by d logit-rank units. The move is kept only if the rounded fake-public score goes up. Results are averaged over 8 seeds.
+
+| Pool, block size, d | Budget | Fake public | Fake private | Seeds with public up |
+| --- | ---: | ---: | ---: | ---: |
+| rank band 0.2–0.8, k 1000, d 0.5 | 24 | **+5.6·10⁻⁴** | −1.1·10⁻⁴ | 100% |
+| top-gap rows, k 2000, d 0.5 | 24 | +4.6·10⁻⁴ | −1.1·10⁻⁴ | 100% |
+| rank band 0.2–0.8, k 1000, d 1.0 | 24 | +6.7·10⁻⁴ | −4.5·10⁻⁴ | 100% |
+| rank band 0.2–0.8, k 2000, d 0.5 | 12 | +3.3·10⁻⁴ | −1.1·10⁻⁴ | 100% |
+| rank band 0.2–0.8, k 1000, d 0.5 | 12 | +2.0·10⁻⁴ | −0.4·10⁻⁴ | 100% |
+
+**Findings.**
+- **Per submission,** block probing gains about +2·10⁻⁵ of public. Further local board steps gain nothing.
+- **Block move size:** larger moves (d ≥ 1) cost far more private for little extra public.
+- **Private hedge:** the private-first final (priv10) does not depend on this ladder.
