@@ -869,3 +869,26 @@ Each fraud missed inside a pushed-down zone costs more than the zone gains.
 | TarunSingh931 "AG continuation alpha curve" | 59031464 | **0.95762** |
 | Mirza Ishran "Tuning step AG continuation" | 59031468 | 0.95760 |
 | daoviet (version of 27/11 14:55) | 59031470 | 0.95758 |
+
+### V13 sim v4: the next step from the top of the ladder ([Kaggle run](https://www.kaggle.com/code/huthnhlng/s6e11-v13-simulated-leaderboard-v4), `kaggle/v13/sim4*.py`, `sim4_noise*.json`)
+
+**Setup.** The fake board is the same as in sim v2. The bank also holds 20 far files, as the real one does. From the best file each method makes one candidate. Results are over 6 seeds × 3 noise levels:
+
+| Method | Fake public | Fake private | Seeds with public up |
+| --- | ---: | ---: | ---: |
+| local board (files within rms 0.1), τ 0.2, λ 1e-4, step rms 0.02 | **+0.68·10⁻⁴** | −0.69·10⁻⁴ | 100% |
+| local board, same, step rms 0.01 | +0.37·10⁻⁴ | −0.32·10⁻⁴ | 100% |
+| board on the whole bank, step rms 0.02 | +0.43·10⁻⁴ | −0.74 to −1.6·10⁻⁴ | 83–94% |
+| extrapolate 0.25 / 0.5 | +0.05 / +0.06·10⁻⁴ | −0.34 / −0.71·10⁻⁴ | 50–61% |
+| fusion of the 2 / 3 / 5 best | −0.18 / −0.19 / −0.24·10⁻⁴ | +0.58 / +1.10 / +1.42·10⁻⁴ | ≤44% |
+
+**Real board.** The method ranked first (`kaggle/v13/step_local.py`, 8 scored files within rms 0.1 of the best) was applied to the real bank:
+
+| Step | Predicted | Submission | Public |
+| --- | ---: | --- | ---: |
+| step 1 from Tarun 0.95762 | 0.95781 | 59031870 | **0.95765** |
+| step 2, refit with step 1 in the bank | 0.95777 | 59031916 | 0.95765 |
+
+- **Step 1:** gained +3·10⁻⁵, inside the simulation's range.
+- **Step 2:** gained nothing, so the local direction is used up. This method stops here.
+- **Private cost:** the simulation puts it at about −0.7·10⁻⁴ per step.

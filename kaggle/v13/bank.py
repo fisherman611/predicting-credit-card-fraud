@@ -4,6 +4,13 @@ P = S + '/pin/'
 G = S + '/pub/goodpjw2008_s6e11-board-model-realmlp-lb-0-95687/'
 BANK = {
     # own submissions (file submitted, public score)
+    S + '/pub/d28_tarunsingh931/submission.csv': 0.95762,
+    S + '/pub/d28_mzishran/submission.csv': 0.95760,
+    S + '/pub/d28_daoviet/submission.csv': 0.95758,
+    S + '/pub/d28_rishabhbafnaiiitd/submission.csv': 0.95753,  # author's stated score
+    S + '/v12/dao20_v8.csv': 0.95475,
+    S + '/v12/local_step1.csv': 0.95765,  # v13 local board step 1
+    S + '/v12/local_step2.csv': 0.95765,  # v13 local board step 2
     S + '/pub/new_daoviet2/submission.csv': 0.95740,
     S + '/v12/dao_mz_mean.csv': 0.95736,
     S + '/v12/board_gain0.001.csv': 0.95719,  # v13 board step 1 (predicted +0.001, real -0.00021)
