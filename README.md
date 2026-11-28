@@ -959,3 +959,36 @@ The four probes gained +2.5·10⁻⁴. The simulation expected +1.1–1.4·10⁻
 - **G (split each accepted block into halves):** public is lower than B, by −0.4 to −0.8·10⁻⁴.
 
 Plain B stays the plan for 29–30/11.
+
+### Plan for 29/11 (10 submissions, not yet approved)
+
+**Start.** The file at public 0.95790 (rank 39). The top-30 cutoff is 0.95795.
+
+1. **Checks before any submission (no cost).**
+   - Pull the leaderboard for the current rank and the new top-30 cutoff.
+   - List public notebooks run in the last day. If one states a score above 0.95790, ask before trying it.
+2. **Probe B, 8 submissions (blocks 4–11).**
+   - Use the block order already fitted (`probe_board.py order`, saved in `probe_board_order.npz`): blocks of 1000 rows, +0.5 logit-rank.
+   - Submit one probe at a time, each built on the current best: `python kaggle/v13/probe_board.py CURRENT.csv j OUT.csv`.
+   - Keep a block only if public beats the current best. Otherwise drop it and go on to the next block.
+   - **Stop rule:** after 4 rejected probes in a row, pause. Then refit the board with the new files, re-run the simulation and only then go on.
+3. **2 spare submissions.**
+   - Use them for a new public notebook with a higher stated score, or for more probes if the first 8 are still gaining.
+   - Ask before using them. Unused submissions do not carry over.
+
+**Expected public.**
+
+| Scenario | Gain per submission | After 8 submissions |
+| --- | ---: | ---: |
+| Simulation | about +2.5·10⁻⁵ | about 0.9581, inside the top-30 cutoff of 28/11 |
+| Pace of 28/11 | about +6·10⁻⁵ | up to about 0.9583 |
+
+Other teams are still climbing, so the cutoff may rise.
+
+**Finals.**
+1. The highest public probe file.
+2. priv10 (59033555) as the private-first hedge.
+
+Both finals must be chosen by hand on Kaggle before 23:59 UTC on 30/11.
+
+**30/11.** The last 10 submissions follow the same procedure. Every submission is approved by the user first.
