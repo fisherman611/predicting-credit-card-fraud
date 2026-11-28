@@ -908,4 +908,4 @@ Each fraud missed inside a pushed-down zone costs more than the zone gains.
 
 **Caveat.** The simulation treats every ladder step as pure public fitting, so its private optimum is w = 0. If the real ladder carries some true signal, from the community models it started from, a small w gains on private. The range w = 0.1–0.2 hedges between the two cases.
 
-**Submissions.** None of these files has been submitted. A file must be submitted once before it can be chosen as a final.
+**Submissions.** priv10 was submitted as 59033555 and scored public **0.95424** (predicted about 0.9541). It is the private-first candidate final. A file must be submitted once before it can be chosen as a final.
